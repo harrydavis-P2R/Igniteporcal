@@ -9,7 +9,7 @@ A one-page tool for Brand Ambassadors. They enter how many £10.99 Ignite starte
 
 The BA fills it in with the retailer, so the copy talks to the retailer directly ("you pay", "your pocket").
 
-**Did you get the CTU / starter stock free?** When the answer is Yes (the default), the page shows a tick, says what the free stock is worth (Ignite CTU, £78.27 ex VAT) and treats every kit sold as 100% margin. When it is No, enter what the CTU cost and how many kits it holds. The cost of the kits sold is then taken off the retailer's total.
+**Did you get the CTU / starter stock free?** When the answer is Yes (the default), the page shows a tick, says what the free stock is worth (Ignite CTU, £78.27 ex VAT) and treats every kit sold as 100% margin. When it is No, the retailer bought their first stock as one of the bundles (Starter, Medium or Pro). The kits then carry that bundle's 55% margin. The total shows the usual bundle margin plus the margin on today's kits on top.
 
 ## Bundles
 

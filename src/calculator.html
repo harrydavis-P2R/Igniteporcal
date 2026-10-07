@@ -35,6 +35,7 @@
   --good: #4fd48a; --good-bg: #133626; --warn: #f2b84b; color-scheme: dark;
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 16px; line-height: 1.45; margin: 0; }
 .num { font-variant-numeric: tabular-nums; }
 .wrap { max-width: 1100px; margin: 0 auto; padding-inline: 16px; padding-block: 16px 40px; display: grid; gap: 16px; }
@@ -67,6 +68,7 @@ header p { margin: 0; opacity: .8; font-size: 14px; }
 .presets button span { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .presets button[aria-pressed="true"] { background: var(--navy); color: var(--navy-ink); border-color: var(--navy); }
 .presets button[aria-pressed="true"] span { color: var(--yellow); }
+.presets.bought { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .fields label.check { display: flex; align-items: center; gap: 8px; color: var(--fg); font-weight: 500; font-size: 14px; }
 .fields label.check input { width: 20px; height: 20px; }
 .ctu { display: grid; gap: 10px; border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
@@ -194,15 +196,20 @@ textarea#summary { width: 100%; min-height: 150px; font: 14px/1.5 ui-monospace, 
         <div class="q">Did you get the CTU / starter stock free?</div>
         <div class="yn" role="group" aria-label="Was the CTU stock free">
           <button type="button" class="yes" id="freeYes" aria-pressed="true">✓ Yes, free</button>
-          <button type="button" class="no" id="freeNo" aria-pressed="false">No, we paid</button>
+          <button type="button" class="no" id="freeNo" aria-pressed="false">No, we bought a bundle</button>
         </div>
-        <div class="fields">
-          <label>CTU value / cost (£<span class="vatlbl"> ex VAT</span>)
+        <div class="fields" id="freeFields">
+          <label><span>Free stock value (£<span class="vatlbl"> ex VAT</span>)</span>
             <input id="ctuCost" type="number" inputmode="decimal" step="0.01" min="0" value="78.27">
           </label>
-          <label>Starter kits in the CTU
-            <input id="ctuKits" type="number" inputmode="numeric" step="1" min="1" value="10">
-          </label>
+        </div>
+        <div id="boughtBox" hidden style="display:grid;gap:8px">
+          <div class="q">Which bundle did you buy?</div>
+          <div class="presets bought" role="group" aria-label="Bundle the store bought">
+            <button type="button" data-bought="starter"><b>Starter</b><span>£41.75 · 55%</span></button>
+            <button type="button" data-bought="medium"><b>Medium</b><span>£75.70 · 55%</span></button>
+            <button type="button" data-bought="pro"><b>Pro</b><span>£130.00 · 55%</span></button>
+          </div>
         </div>
         <p class="hint" id="ctuHint"></p>
       </div>
@@ -260,10 +267,10 @@ textarea#summary { width: 100%; min-height: 150px; font: 14px/1.5 ui-monospace, 
           <label>Kit retail price (£)
             <input id="kitPrice" type="number" inputmode="decimal" step="0.01" min="0" value="10.99">
           </label>
-          <label>Bundle cost to store (£<span class="vatlbl"> ex VAT</span>)
+          <label><span>Bundle cost to store (£<span class="vatlbl"> ex VAT</span>)</span>
             <input id="bCost" type="number" inputmode="decimal" step="0.01" min="0" value="41.75">
           </label>
-          <label>Bundle sells for / RRP (£<span class="vatlbl"> inc VAT</span>)
+          <label><span>Bundle sells for / RRP (£<span class="vatlbl"> inc VAT</span>)</span>
             <input id="bRrp" type="number" inputmode="decimal" step="0.01" min="0" value="112.35">
           </label>
           <label class="full check"><input id="vat" type="checkbox" checked> VAT-registered store (margin worked ex VAT, like Vape Local)</label>
@@ -343,14 +350,15 @@ textarea#summary { width: 100%; min-height: 150px; font: 14px/1.5 ui-monospace, 
     example: { bName: "Example bundle", bCost: 57.90, bRrp: 107.50, vat: false }
   };
   var $ = function (id) { return document.getElementById(id); };
-  var state = { mode: "kits", kits: 10, cash: 30, free: true };
+  var state = { mode: "kits", kits: 10, cash: 30, free: true, bought: "starter" };
 
   function load() {
     try {
       var s = JSON.parse(localStorage.getItem("ignite-ba-calc") || "null");
       if (!s) return;
-      ["kitPrice", "bCost", "bRrp", "bName", "store", "ctuCost", "ctuKits"].forEach(function (k) { if (s[k] != null) $(k).value = s[k]; });
+      ["kitPrice", "bCost", "bRrp", "bName", "store", "ctuCost"].forEach(function (k) { if (s[k] != null) $(k).value = s[k]; });
       if (s.free != null) state.free = s.free;
+      if (s.bought && PRESETS[s.bought]) state.bought = s.bought;
       if (s.vat != null) $("vat").checked = s.vat;
       if (s.mode) state.mode = s.mode;
       if (s.kits != null) state.kits = s.kits;
@@ -362,7 +370,7 @@ textarea#summary { width: 100%; min-height: 150px; font: 14px/1.5 ui-monospace, 
       localStorage.setItem("ignite-ba-calc", JSON.stringify({
         kitPrice: $("kitPrice").value, bCost: $("bCost").value, bRrp: $("bRrp").value,
         bName: $("bName").value, store: $("store").value, vat: $("vat").checked,
-        ctuCost: $("ctuCost").value, ctuKits: $("ctuKits").value, free: state.free,
+        ctuCost: $("ctuCost").value, free: state.free, bought: state.bought,
         mode: state.mode, kits: state.kits, cash: state.cash
       }));
     } catch (e) {}
@@ -382,16 +390,16 @@ textarea#summary { width: 100%; min-height: 150px; font: 14px/1.5 ui-monospace, 
     var extra = Math.max(0, round2(net - p.cost));
     var bundleProfit = round2(rrpNet - pays);
     var por = rrpNet > 0 ? bundleProfit / rrpNet : 0;
-    // If the store paid for the CTU, the kits sold cost it something: take that off what it keeps.
-    var kitNet = p.kit / v;
-    var stockCost = !p.free && kitNet > 0 ? round2(net * p.kitCost / kitNet) : 0;
+    // If the store bought its first stock as a bundle, the kits sold cost it the bundle's cost share
+    // (e.g. 45% of ex-VAT retail at 55% margin): take that off what it keeps.
+    var stockCost = p.free ? 0 : round2(net * p.costRatio);
     return { sales: sales, net: net, rrpNet: rrpNet, pays: pays, extra: extra, bundleProfit: bundleProfit, por: por, stockCost: stockCost, total: round2(bundleProfit + extra - stockCost) };
   }
 
   function prices() {
     return { kit: num($("kitPrice").value), cost: num($("bCost").value), rrp: num($("bRrp").value), name: $("bName").value.trim() || "agreed bundle", vat: $("vat").checked,
-      free: state.free, ctuCost: num($("ctuCost").value), ctuKits: Math.max(1, Math.round(num($("ctuKits").value)) || 1),
-      kitCost: num($("ctuCost").value) / (Math.max(1, Math.round(num($("ctuKits").value)) || 1)) };
+      free: state.free, ctuCost: num($("ctuCost").value), bought: PRESETS[state.bought],
+      costRatio: PRESETS[state.bought].bCost / (PRESETS[state.bought].bRrp / 1.2) };
   }
 
   function render() {
@@ -408,17 +416,21 @@ textarea#summary { width: 100%; min-height: 150px; font: 14px/1.5 ui-monospace, 
       b.setAttribute("aria-pressed", Math.abs(p.cost - q.bCost) < .005 && Math.abs(p.rrp - q.bRrp) < .005 && p.vat === q.vat);
     });
 
-    var kitMargin = p.free ? 1 : (kitNet > 0 ? (kitNet - p.kitCost) / kitNet : 0);
+    var kitMargin = p.free ? 1 : 1 - p.costRatio;
+    var kitCost = round2(kitNet * p.costRatio), kitProfit = round2(r.net - r.stockCost);
+    $("freeFields").hidden = !p.free;
+    $("boughtBox").hidden = p.free;
+    document.querySelectorAll("[data-bought]").forEach(function (b) { b.setAttribute("aria-pressed", b.dataset.bought === state.bought); });
     $("freeYes").setAttribute("aria-pressed", p.free);
     $("freeNo").setAttribute("aria-pressed", !p.free);
     $("ctuHint").textContent = p.free
       ? "Free stock worth " + gbp(p.ctuCost) + ex + ": every kit sold is 100% margin."
-      : "Kits cost you " + gbp(p.kitCost) + ex + " each (" + gbp(p.ctuCost) + " ÷ " + p.ctuKits + "), so each kit sold makes " + pct(kitMargin) + " margin.";
+      : "Your kits came from the " + p.bought.bName + " (" + gbp(p.bought.bCost) + " ex VAT), so each kit sold makes " + pct(kitMargin) + " margin: " + gbp(round2(kitNet - kitCost)) + ex + " a kit.";
     $("freeTick").hidden = !p.free;
     $("freeTickText").textContent = "CTU & starter stock supplied FREE (worth " + gbp(p.ctuCost) + ex + "), so every kit sold is 100% profit";
     $("note").textContent = p.free
       ? "Your starter kits were supplied free, so every kit sold is 100% margin and goes towards your replacement bundle."
-      : "You paid for the CTU, so the cost of the kits sold is taken off what you keep. Today's takings still go towards your replacement bundle.";
+      : "You bought your first stock as a bundle, so you keep its margin on every kit sold. Today's takings still go towards your replacement bundle.";
 
     $("chipRrp").textContent = gbp(p.rrp);
     $("chipMar").textContent = gbp(base.bundleProfit) + " (" + pct(base.por) + ")";
@@ -467,7 +479,9 @@ textarea#summary { width: 100%; min-height: 150px; font: 14px/1.5 ui-monospace, 
     if (kitsLine) rows.push(["Starter kits sold today", state.kits + " × " + gbp(p.kit) + " = " + gbp(sales)]);
     else rows.push(["Stock sold today", gbp(sales)]);
     if (p.free) rows.push(["✓ CTU & stock supplied free (worth " + gbp(p.ctuCost) + ex + "), so margin on kits is", "100%", "tick"]);
-    else rows.push(["You paid for the CTU, so margin on kits is", pct(kitMargin)]);
+    else {
+      rows.push(["Kits came from your " + p.bought.bName + ", so margin on kits is", pct(kitMargin)]);
+    }
     if (p.vat) rows.push(["Takings ex VAT: " + gbp(sales) + " ÷ 1.2", gbp(r.net)]);
     rows.push(["Cost of " + p.name + ex, gbp(p.cost)]);
     rows.push(["<span class='op'>minus</span> today's takings put towards it", "−" + gbp(Math.min(r.net, p.cost))]);
@@ -477,8 +491,12 @@ textarea#summary { width: 100%; min-height: 150px; font: 14px/1.5 ui-monospace, 
     rows.push(["Profit on bundle: " + gbp(r.rrpNet) + " − " + gbp(r.pays), gbp(r.bundleProfit)]);
     rows.push(["POR: " + gbp(r.bundleProfit) + " ÷ " + gbp(r.rrpNet), pct(r.por)]);
     if (r.extra > 0) rows.push(["Extra cash left over: " + gbp(r.net) + " − " + gbp(p.cost), "+" + gbp(r.extra), "plus"]);
-    if (!p.free && r.stockCost > 0) rows.push(["<span class='op'>minus</span> cost of kits sold (" + gbp(p.kitCost) + " each)", "−" + gbp(r.stockCost), "minus"]);
+    if (!p.free && r.stockCost > 0) rows.push(["<span class='op'>minus</span> cost of kits sold (" + gbp(kitCost) + " each, from your " + p.bought.bName + ")", "−" + gbp(r.stockCost), "minus"]);
     rows.push(["<b>Total in your pocket" + ex + "</b>", gbp(r.total), "total"]);
+    if (!p.free && r.net > 0) {
+      rows.push(["That's the usual bundle margin", gbp(base.bundleProfit)]);
+      rows.push(["<span class='op'>plus</span> margin on today's kits on top: " + gbp(r.net) + " × " + pct(kitMargin), "+" + gbp(kitProfit), "plus"]);
+    }
     $("maths").innerHTML = rows.map(function (rw) {
       return "<tr class='" + (rw[2] || "") + "'><td>" + rw[0] + "</td><td>" + rw[1] + "</td></tr>";
     }).join("");
@@ -501,7 +519,7 @@ textarea#summary { width: 100%; min-height: 150px; font: 14px/1.5 ui-monospace, 
     var d = new Date().toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
     var lines = [
       "Ignite BA Day" + (store ? " – " + store : "") + " – " + d,
-      (kitsLine ? "Starter kits sold: " + state.kits + " × " + gbp(p.kit) + " = " + gbp(sales) : "Stock sold: " + gbp(sales)) + (p.free ? " (✓ CTU & stock supplied FREE, worth " + gbp(p.ctuCost) + ex + ", so 100% margin)" : " (CTU paid for, kits cost " + gbp(p.kitCost) + ex + " each)"),
+      (kitsLine ? "Starter kits sold: " + state.kits + " × " + gbp(p.kit) + " = " + gbp(sales) : "Stock sold: " + gbp(sales)) + (p.free ? " (✓ CTU & stock supplied FREE, worth " + gbp(p.ctuCost) + ex + ", so 100% margin)" : " (kits from your " + p.bought.bName + ", " + pct(kitMargin) + " margin = " + gbp(kitProfit) + ex + " profit on today's sales)"),
       "",
       p.name + ": costs " + gbp(p.cost) + ex + ", sells for " + gbp(p.rrp) + (p.vat ? " inc VAT" : ""),
       "Bought on its own: pay " + gbp(p.cost) + " → POR " + pct(base.por) + " (" + gbp(base.bundleProfit) + " profit)",
@@ -540,7 +558,8 @@ textarea#summary { width: 100%; min-height: 150px; font: 14px/1.5 ui-monospace, 
   document.querySelectorAll("[data-cash]").forEach(function (b) { b.addEventListener("click", function () { state.cash = +b.dataset.cash; render(); }); });
   ["kitPrice", "bCost", "bRrp", "bName", "store"].forEach(function (id) { $(id).addEventListener("input", render); });
   $("vat").addEventListener("change", render);
-  ["ctuCost", "ctuKits"].forEach(function (id) { $(id).addEventListener("input", render); });
+  $("ctuCost").addEventListener("input", render);
+  document.querySelectorAll("[data-bought]").forEach(function (b) { b.addEventListener("click", function () { state.bought = b.dataset.bought; render(); }); });
   $("freeYes").addEventListener("click", function () { state.free = true; render(); });
   $("freeNo").addEventListener("click", function () { state.free = false; render(); });
   document.querySelectorAll("[data-preset]").forEach(function (b) {
