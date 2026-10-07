@@ -38,7 +38,7 @@ Example: 10 kits, free stock, Medium Bundle. £109.90 taken = £91.58 ex VAT. Th
 
 ## Install on an iPad (works offline)
 
-The app is a PWA, served at https://igniteporcal.vercel.app.
+The app is a PWA, served at https://igniteporcal.vercel.app. Vercel deploys every push automatically. Send the team **https://igniteporcal.vercel.app/install.html**, which has a QR code and the steps below.
 
 1. Open the link in **Safari** on the iPad while it has signal.
 2. Tap **Share**, then **Add to Home Screen**, then **Add**.

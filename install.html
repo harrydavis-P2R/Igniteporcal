@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Install BA Day</title>
+<meta name="theme-color" content="#1d2a5e">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+:root { --navy: #1d2a5e; --yellow: #ffd200; --bg: #eef0f6; --surface: #fff; --fg: #161c33; --muted: #5b6382; --line: #d8dcea; }
+@media (prefers-color-scheme: dark) { :root { --bg: #0d1226; --surface: #161d38; --fg: #eef0fa; --muted: #9aa2c4; --line: #2a3359; color-scheme: dark; } }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 17px/1.5 Barlow, system-ui, sans-serif; }
+.wrap { max-width: 880px; margin: 0 auto; padding-inline: 16px; padding-block: 24px 48px; display: grid; gap: 18px; }
+header { background: var(--navy); color: #fff; border-radius: 14px; padding: 20px; display: flex; gap: 16px; align-items: center; }
+header img { width: 64px; height: 64px; border-radius: 14px; }
+h1 { font: 700 32px/1.1 "Barlow Condensed", "Arial Narrow", sans-serif; margin: 0; }
+header p { margin: 4px 0 0; opacity: .85; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px; display: grid; gap: 12px; align-content: start; min-width: 0; }
+h2 { font: 700 22px "Barlow Condensed", "Arial Narrow", sans-serif; margin: 0; }
+ol { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
+.qr { background: #fff; padding: 14px; border-radius: 12px; justify-self: center; line-height: 0; }
+.url { font: 700 20px "Barlow Condensed", sans-serif; text-align: center; word-break: break-all; }
+.open { display: block; text-align: center; background: var(--yellow); color: #1d2a5e; font-weight: 700; text-decoration: none; padding: 14px; border-radius: 12px; font-size: 18px; }
+.muted { color: var(--muted); font-size: 15px; margin: 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <img src="icons/icon-192.png" alt="">
+    <div>
+      <h1>Install the BA Day Calculator</h1>
+      <p>Put it on your iPad or phone Home Screen. It works in store with no signal.</p>
+    </div>
+  </header>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Scan to open on your iPad</h2>
+      <div class="qr"><img src="icons/qr-app.svg" alt="QR code for igniteporcal.vercel.app" width="220" height="220"></div>
+      <div class="url">igniteporcal.vercel.app</div>
+      <a class="open" href="./">Open the calculator</a>
+    </div>
+    <div class="card">
+      <h2>iPad or iPhone (Safari)</h2>
+      <ol>
+        <li>Open <b>igniteporcal.vercel.app</b> in <b>Safari</b> while you have signal.</li>
+        <li>Tap the <b>Share</b> button (the square with an arrow).</li>
+        <li>Scroll down and tap <b>Add to Home Screen</b>, then <b>Add</b>.</li>
+        <li>Open <b>BA Day</b> from your Home Screen. It now works offline.</li>
+      </ol>
+      <h2>Android (Chrome)</h2>
+      <ol>
+        <li>Open <b>igniteporcal.vercel.app</b> in <b>Chrome</b>.</li>
+        <li>Tap <b>Install app</b> at the bottom, or the <b>⋮</b> menu then <b>Install app</b>.</li>
+      </ol>
+      <p class="muted">Updates arrive by themselves: open the app with signal now and then and it picks up the latest prices and maths.</p>
+    </div>
+  </div>
+</div>
+</body>
+</html>

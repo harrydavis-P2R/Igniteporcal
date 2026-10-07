@@ -653,6 +653,44 @@ textarea#summary { width: 100%; min-height: 190px; font: 14px/1.5 ui-monospace, 
 })();
 </script>
 
+<div id="installBar" hidden style="position:fixed;left:0;right:0;bottom:0;z-index:50;background:#1d2a5e;color:#fff;padding:12px 16px calc(12px + env(safe-area-inset-bottom, 0px));display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;box-shadow:0 -4px 16px rgba(0,0,0,.2);font:15px Barlow, system-ui, sans-serif">
+  <img src="icons/icon-192.png" alt="" width="40" height="40" style="border-radius:9px">
+  <span id="installText" style="flex:1 1 240px;max-width:560px"></span>
+  <button type="button" id="installBtn" hidden style="border:0;background:#ffd200;color:#1d2a5e;font:700 16px Barlow, system-ui, sans-serif;padding:10px 18px;border-radius:10px;cursor:pointer">Install app</button>
+  <button type="button" id="installClose" aria-label="Hide" style="border:0;background:transparent;color:#fff;font-size:24px;line-height:1;cursor:pointer;padding:4px 8px">×</button>
+</div>
+<script>
+(function () {
+  // Show how to add the app to the Home Screen, unless it's already installed or was dismissed.
+  var standalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+  var dismissed = false;
+  try { dismissed = localStorage.getItem("ba-install-dismissed") === "1"; } catch (e) {}
+  if (standalone || dismissed || location.protocol === "file:") return;
+  var bar = document.getElementById("installBar"), text = document.getElementById("installText"), btn = document.getElementById("installBtn");
+  var ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  function show() { bar.hidden = false; document.body.style.paddingBottom = (bar.offsetHeight + 8) + "px"; }
+  if (ios) {
+    text.innerHTML = "<b>Add BA Day to your Home Screen:</b> tap the Share button <span aria-hidden='true'>(square with an arrow)</span>, then <b>Add to Home Screen</b>. It then works with no signal.";
+    show();
+  }
+  var deferred = null;
+  window.addEventListener("beforeinstallprompt", function (e) {
+    e.preventDefault(); deferred = e;
+    text.innerHTML = "<b>Install BA Day</b> on this device. It then opens like an app and works with no signal.";
+    btn.hidden = false; show();
+  });
+  btn.addEventListener("click", function () {
+    if (!deferred) return;
+    deferred.prompt();
+    deferred.userChoice.finally(function () { deferred = null; bar.hidden = true; document.body.style.paddingBottom = ""; });
+  });
+  document.getElementById("installClose").addEventListener("click", function () {
+    bar.hidden = true; document.body.style.paddingBottom = "";
+    try { localStorage.setItem("ba-install-dismissed", "1"); } catch (e) {}
+  });
+})();
+</script>
+
 <script>
 if ("serviceWorker" in navigator && location.protocol !== "file:") {
   window.addEventListener("load", function () {
