@@ -154,6 +154,13 @@ details.settings summary { cursor: pointer; padding: 12px 0; font-weight: 600; }
 .cmp .por { font: 800 40px / 1 var(--display); }
 .cmp.today .por { color: var(--good); }
 .cmp .meta { font-size: 13px; color: var(--muted); }
+.cmp .lines { display: grid; gap: 4px; font-size: 14px; margin: 4px 0 0; }
+.cmp .lines div { display: flex; justify-content: space-between; gap: 10px; }
+.cmp .lines dt { color: var(--muted); }
+.cmp .lines dd { margin: 0; font-weight: 700; white-space: nowrap; }
+.cmp .lines .when { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
+.cmp .lines .tot { border-top: 1px solid var(--line); padding-top: 6px; margin-top: 2px; }
+.cmp .lines .tot dt { color: var(--fg); font-weight: 700; }
 .cmp .lift { font-weight: 700; color: var(--good); font-size: 14px; }
 
 .maths { width: 100%; border-collapse: collapse; font-size: 15px; }
@@ -316,7 +323,8 @@ textarea#summary { width: 100%; min-height: 150px; font: 14px/1.5 ui-monospace, 
         <div class="hero-row">
           <div class="stat"><span class="k">You pay for the bundle<span class="vatlbl"> (ex VAT)</span></span><span class="v num" id="pays">£0.00</span></div>
           <div class="stat"><span class="k">Your profit on return (POR)</span><span class="v y num" id="por">100%</span></div>
-          <div class="stat"><span class="k">Extra cash in your till<span class="vatlbl"> (ex VAT)</span></span><span class="v num" id="extra">£0.00</span></div>
+          <div class="stat"><span class="k">Extra cash in your till now<span class="vatlbl"> (ex VAT)</span></span><span class="v num" id="extra">£0.00</span></div>
+          <div class="stat"><span class="k">Future sales of the bundle at RRP</span><span class="v num" id="future">£0.00</span></div>
         </div>
       </div>
 
@@ -324,12 +332,12 @@ textarea#summary { width: 100%; min-height: 150px; font: 14px/1.5 ui-monospace, 
         <div class="cmp">
           <span class="eyebrow">Buying the bundle on its own</span>
           <span class="por num" id="basePor">46%</span>
-          <span class="meta num" id="baseMeta">Pays £57.90, sells for £107.50</span>
+          <dl class="lines num" id="baseMeta"></dl>
         </div>
         <div class="cmp today">
           <span class="eyebrow">With today's sales</span>
           <span class="por num" id="todayPor">100%</span>
-          <span class="meta num" id="todayMeta"></span>
+          <dl class="lines num" id="todayMeta"></dl>
           <span class="lift num" id="lift"></span>
         </div>
       </div>
@@ -488,9 +496,23 @@ textarea#summary { width: 100%; min-height: 150px; font: 14px/1.5 ui-monospace, 
 
     // compare
     $("basePor").textContent = pct(base.por);
-    $("baseMeta").textContent = "Pays " + gbp(p.cost) + ex + ", sells for " + gbp(p.rrp) + (p.vat ? " inc VAT" : "") + ". Profit " + gbp(base.bundleProfit) + ex + ".";
+    // Now = cash in the till today; later = selling the bundle stock at RRP.
+    function lines(x, isBase) {
+      var L = [["Now", null, "when"]];
+      L.push(["You pay for the bundle" + ex, x.pays > 0 ? "−" + gbp(x.pays) : "£0.00 (free)"]);
+      if (!isBase && x.extra > 0) L.push(["Left in your till after that", "+" + gbp(x.extra)]);
+      L.push(["Later", null, "when"]);
+      L.push(["Bundle stock sells at RRP" + (p.vat ? " (" + gbp(p.rrp) + " inc VAT)" : ""), "+" + gbp(x.rrpNet)]);
+      if (!p.free && x.stockCost > 0) L.push(["Cost of kits sold today", "−" + gbp(x.stockCost)]);
+      L.push(["Total profit" + ex, gbp(isBase ? x.bundleProfit : x.total), "tot"]);
+      return L.map(function (l) {
+        return l[2] === "when" ? "<div class='when'>" + l[0] + "</div>" : "<div class='" + (l[2] || "") + "'><dt>" + l[0] + "</dt><dd>" + l[1] + "</dd></div>";
+      }).join("");
+    }
+    $("baseMeta").innerHTML = lines(base, true);
     $("todayPor").textContent = pct(r.por) + (r.extra > 0 ? " +" + gbp(r.extra) : "");
-    $("todayMeta").textContent = "Pays " + gbp(r.pays) + ex + ", sells for " + gbp(p.rrp) + (p.vat ? " inc VAT" : "") + ". Profit " + gbp(r.total) + ex + ".";
+    $("todayMeta").innerHTML = lines(r, false);
+    $("future").textContent = gbp(p.rrp);
     var lift = round2(r.total - base.bundleProfit);
     $("lift").textContent = lift > 0 ? "+" + gbp(lift) + " more in your pocket" : "";
 
@@ -506,8 +528,8 @@ textarea#summary { width: 100%; min-height: 150px; font: 14px/1.5 ui-monospace, 
     rows.push(["Cost of " + p.name + ex, gbp(p.cost)]);
     rows.push(["<span class='op'>minus</span> today's takings put towards it", "−" + gbp(Math.min(r.net, p.cost))]);
     rows.push(["<b>You pay for the bundle" + ex + "</b>", gbp(r.pays)]);
-    if (p.vat) rows.push(["Bundle sells for " + gbp(p.rrp) + " inc VAT ÷ 1.2", gbp(r.rrpNet)]);
-    else rows.push(["Bundle sells for (RRP)", gbp(p.rrp)]);
+    if (p.vat) rows.push(["Future sales of the bundle stock: " + gbp(p.rrp) + " RRP inc VAT ÷ 1.2", gbp(r.rrpNet)]);
+    else rows.push(["Future sales of the bundle stock at RRP", gbp(p.rrp)]);
     rows.push(["Profit on bundle: " + gbp(r.rrpNet) + " − " + gbp(r.pays), gbp(r.bundleProfit)]);
     rows.push(["POR: " + gbp(r.bundleProfit) + " ÷ " + gbp(r.rrpNet), pct(r.por)]);
     if (r.extra > 0) rows.push(["Extra cash left over: " + gbp(r.net) + " − " + gbp(p.cost), "+" + gbp(r.extra), "plus"]);
@@ -544,6 +566,7 @@ textarea#summary { width: 100%; min-height: 150px; font: 14px/1.5 ui-monospace, 
       p.name + ": costs " + gbp(p.cost) + ex + ", sells for " + gbp(p.rrp) + (p.vat ? " inc VAT" : ""),
       "Bought on its own: pay " + gbp(p.cost) + " → POR " + pct(base.por) + " (" + gbp(base.bundleProfit) + " profit)",
       "With today's sales: pay " + gbp(r.pays) + " → POR " + pct(r.por) + (r.extra > 0 ? " plus " + gbp(r.extra) + " extra in the till" : ""),
+      "  Now: " + (r.extra > 0 ? gbp(r.extra) + " left in your till" : "pay " + gbp(r.pays)) + " | Later: bundle stock sells for " + gbp(p.rrp) + " at RRP",
       (!p.free && r.stockCost > 0 ? "Less cost of kits sold: " + gbp(r.stockCost) : ""),
       "Total in your pocket: " + gbp(r.total) + ex + (lift > 0 ? " (" + gbp(lift) + " more than buying the bundle normally)" : "")
     ];
