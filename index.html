@@ -154,6 +154,24 @@ details.settings summary { cursor: pointer; padding: 12px 0; font-weight: 600; }
 .cmp .por { font: 800 40px / 1 var(--display); }
 .cmp.today .por { color: var(--good); }
 .cmp .meta { font-size: 13px; color: var(--muted); }
+.tiers { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 520px) { .tiers { grid-template-columns: 1fr; } }
+.tier { border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: grid; gap: 6px; text-align: left; background: var(--surface); color: var(--fg); font-family: var(--body); cursor: pointer; min-width: 0; align-content: start; }
+.tier:hover { border-color: var(--blue); }
+.tier.sel { outline: 3px solid var(--blue); outline-offset: -1px; }
+.tier.free { background: var(--good-bg); border-color: var(--good); }
+.tier .nm { font: 700 20px var(--display); display: flex; justify-content: space-between; gap: 6px; align-items: baseline; }
+.tier .nm small { font: 600 13px var(--body); color: var(--muted); }
+.tier .pill { justify-self: start; font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 99px; background: var(--bg); color: var(--fg); }
+.tier.free .pill { background: var(--good); color: #fff; }
+.tier .big { font: 800 28px / 1 var(--display); }
+.tier.free .big { color: var(--good); }
+.tier .bar { height: 8px; border-radius: 99px; background: var(--bg); overflow: hidden; }
+.tier .bar i { display: block; height: 100%; background: var(--yellow); }
+.tier.free .bar i { background: var(--good); }
+.tier .sub { font-size: 13px; color: var(--muted); }
+.tier .sub b { color: var(--fg); }
+.pick { margin: 0; font-family: var(--display); font-weight: 600; font-size: 20px; line-height: 1.25; text-wrap: balance; }
 .cmp .lines { display: grid; gap: 4px; font-size: 14px; margin: 4px 0 0; }
 .cmp .lines div { display: flex; justify-content: space-between; gap: 10px; }
 .cmp .lines dt { color: var(--muted); }
@@ -328,6 +346,12 @@ textarea#summary { width: 100%; min-height: 150px; font: 14px/1.5 ui-monospace, 
         </div>
       </div>
 
+      <div style="display:grid;gap:10px">
+        <div class="eyebrow">Which bundle do today's sales pay for?</div>
+        <p class="pick" id="pick"></p>
+        <div class="tiers num" id="tiers"></div>
+      </div>
+
       <div class="compare">
         <div class="cmp">
           <span class="eyebrow">Buying the bundle on its own</span>
@@ -494,6 +518,42 @@ textarea#summary { width: 100%; min-height: 150px; font: 14px/1.5 ui-monospace, 
     $("por").textContent = pct(r.por);
     $("extra").textContent = gbp(r.extra);
 
+    // Which of the three bundles today's sales pay for. Each uses its own price and VAT basis.
+    var tierKeys = ["starter", "medium", "pro"], freeOnes = [], tierHtml = [];
+    tierKeys.forEach(function (key) {
+      var q = PRESETS[key];
+      var tp = { kit: p.kit, cost: q.bCost, rrp: q.bRrp, vat: q.vat, free: p.free, costRatio: p.costRatio };
+      var t = calc(sales, tp), tn = p.kit / (q.vat ? 1.2 : 1);
+      var need = tn > 0 ? Math.ceil(q.bCost / tn - 1e-9) : 0;
+      var more = Math.max(0, need - (kitsLine ? state.kits : Math.floor(sales / (p.kit || 1) + 1e-9)));
+      var isFree = t.pays === 0;
+      if (isFree) freeOnes.push(q.bName);
+      var sel = Math.abs(p.cost - q.bCost) < .005 && Math.abs(p.rrp - q.bRrp) < .005;
+      var fr = Math.min(1, t.net / q.bCost);
+      tierHtml.push("<button type='button' class='tier" + (isFree ? " free" : "") + (sel ? " sel" : "") + "' data-tier='" + key + "'>" +
+        "<span class='nm'>" + q.bName.replace("Ignite ", "").replace(" Bundle", "") + "<small>" + gbp(q.bCost) + "</small></span>" +
+        "<span class='pill'>" + (isFree ? "✓ FREE" : sales > 0 ? "Part paid" : "Full price") + "</span>" +
+        "<span class='big'>" + (isFree ? "£0.00" : "Pay " + gbp(t.pays)) + "</span>" +
+        "<span class='bar'><i style='width:" + (fr * 100) + "%'></i></span>" +
+        "<span class='sub'>" + (isFree
+          ? (t.extra > 0 ? "<b>+" + gbp(t.extra) + "</b> left in your till" : "Exactly covered")
+          : "<b>" + more + " more kit" + (more === 1 ? "" : "s") + "</b> to make it free") + "</span>" +
+        "<span class='sub'>Free at " + need + " kits · RRP " + gbp(q.bRrp) + "</span>" +
+        "<span class='sub'>POR <b>" + pct(t.por) + "</b> · profit <b>" + gbp(t.total) + "</b></span>" +
+        "</button>");
+    });
+    $("tiers").innerHTML = tierHtml.join("");
+    var best = freeOnes[freeOnes.length - 1];
+    var nextKey = tierKeys[freeOnes.length];
+    var pick;
+    if (sales <= 0) pick = "Every kit sold brings a free bundle closer. Starter is free at " + Math.ceil(PRESETS.starter.bCost / (p.kit / 1.2) - 1e-9) + " kits.";
+    else if (!best) pick = "Today's sales take " + gbp(Math.min(sales / 1.2, PRESETS.starter.bCost)) + " ex VAT off any bundle. Keep going for a free Starter Bundle.";
+    else if (nextKey) {
+      var nq = PRESETS[nextKey], np = calc(sales, { kit: p.kit, cost: nq.bCost, rrp: nq.bRrp, vat: nq.vat, free: p.free, costRatio: p.costRatio });
+      pick = "Today's sales pay for the " + best + " in full, or you can step up to the " + nq.bName + " for just " + gbp(np.pays) + " ex VAT.";
+    } else pick = "Today's sales pay for the " + best + ", our biggest bundle, in full.";
+    $("pick").textContent = pick;
+
     // compare
     $("basePor").textContent = pct(base.por);
     // Now = cash in the till today; later = selling the bundle stock at RRP.
@@ -563,6 +623,11 @@ textarea#summary { width: 100%; min-height: 150px; font: 14px/1.5 ui-monospace, 
       "Ignite BA Day" + (store ? " – " + store : "") + " – " + d,
       (kitsLine ? "Starter kits sold: " + state.kits + " × " + gbp(p.kit) + " = " + gbp(sales) : "Stock sold: " + gbp(sales)) + (p.free ? " (✓ CTU & stock supplied FREE, worth " + gbp(p.ctuCost) + ex + ", so 100% margin)" : " (kits from your " + p.bought.bName + ", " + pct(kitMargin) + " margin = " + gbp(kitProfit) + ex + " profit on today's sales)"),
       "",
+      "Bundles: " + ["starter", "medium", "pro"].map(function (k) {
+        var q = PRESETS[k], t = calc(sales, { kit: p.kit, cost: q.bCost, rrp: q.bRrp, vat: q.vat, free: p.free, costRatio: p.costRatio });
+        return q.bName.replace("Ignite ", "") + " " + (t.pays === 0 ? "FREE" : "pay " + gbp(t.pays));
+      }).join(" | ") + " (ex VAT)",
+      "",
       p.name + ": costs " + gbp(p.cost) + ex + ", sells for " + gbp(p.rrp) + (p.vat ? " inc VAT" : ""),
       "Bought on its own: pay " + gbp(p.cost) + " → POR " + pct(base.por) + " (" + gbp(base.bundleProfit) + " profit)",
       "With today's sales: pay " + gbp(r.pays) + " → POR " + pct(r.por) + (r.extra > 0 ? " plus " + gbp(r.extra) + " extra in the till" : ""),
@@ -611,6 +676,10 @@ textarea#summary { width: 100%; min-height: 150px; font: 14px/1.5 ui-monospace, 
       $("bName").value = q.bName; $("bCost").value = q.bCost.toFixed(2); $("bRrp").value = q.bRrp.toFixed(2); $("vat").checked = q.vat;
       render();
     });
+  });
+  $("tiers").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-tier]");
+    if (b) document.querySelector("[data-preset='" + b.dataset.tier + "']").click();
   });
   $("ladder").addEventListener("click", function (e) {
     var tr = e.target.closest("tr[data-k]");
