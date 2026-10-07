@@ -68,6 +68,16 @@ header.bar { background: var(--navy); color: var(--navy-ink); border-radius: var
 .mark { background: var(--yellow); color: var(--yellow-ink); font-family: var(--display); font-weight: 800; font-size: 20px; letter-spacing: .06em; padding: 4px 10px; border-radius: 8px; }
 header h1 { font-family: var(--display); font-weight: 700; font-size: clamp(22px, 4vw, 30px); margin: 0; }
 header p { margin: 0; opacity: .8; font-size: 14px; }
+.brand { min-width: 0; flex: 1 1 320px; align-items: flex-start; }
+.brand > div { min-width: 0; flex: 1; display: grid; gap: 2px; }
+.brand .mark { margin-top: 4px; }
+.appname { font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--yellow); opacity: 1 !important; }
+.storehead { margin: 0; }
+.storehead textarea { display: block; width: 100%; min-width: 0; border: 0; border-bottom: 2px dashed transparent; background: transparent; color: var(--navy-ink); font: 800 clamp(28px, 6vw, 48px) / 1.1 var(--display); padding: 0 0 2px; border-radius: 0; resize: none; overflow: hidden; }
+.storehead textarea::placeholder { color: var(--navy-ink); opacity: .45; }
+.storehead textarea:hover, .storehead textarea:placeholder-shown { border-bottom-color: rgba(255,255,255,.35); }
+.storehead textarea:focus-visible { outline: none; border-bottom-color: var(--yellow); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .vatnote { font-size: 13px; font-weight: 600; background: rgba(255,255,255,.12); padding: 6px 12px; border-radius: 99px; }
 
 .grid { display: grid; gap: 16px; grid-template-columns: 1fr; }
@@ -231,7 +241,8 @@ textarea#summary { width: 100%; min-height: 190px; font: 14px/1.5 ui-monospace, 
     <div class="brand">
       <span class="mark">IGNITE</span>
       <div>
-        <h1>BA Day Calculator</h1>
+        <p class="appname">BA Day Calculator · <span id="todayDate"></span></p>
+        <h1 class="storehead"><label for="store" class="sr">Store name</label><textarea id="store" rows="1" placeholder="Tap to add store name" autocomplete="off" enterkeyhint="done" spellcheck="false"></textarea></h1>
         <p>What today's starter kit sales put in your pocket</p>
       </div>
     </div>
@@ -310,7 +321,7 @@ textarea#summary { width: 100%; min-height: 190px; font: 14px/1.5 ui-monospace, 
       </div>
 
       <details class="settings">
-        <summary>Prices &amp; store name</summary>
+        <summary>Prices</summary>
         <div class="fields">
           <label>Starter kit retail (£ inc VAT)
             <input id="kitPrice" type="number" inputmode="decimal" step="0.01" min="0" value="10.99">
@@ -325,9 +336,6 @@ textarea#summary { width: 100%; min-height: 190px; font: 14px/1.5 ui-monospace, 
           <label>Medium RRP<input id="mediumRrp" type="number" inputmode="decimal" step="0.01" min="0" value="202.20"></label>
           <label>Pro price<input id="proCost" type="number" inputmode="decimal" step="0.01" min="0" value="130.00"></label>
           <label>Pro RRP<input id="proRrp" type="number" inputmode="decimal" step="0.01" min="0" value="347.00"></label>
-          <label class="full">Store name (for the summary)
-            <input id="store" type="text" placeholder="e.g. Costcutter High St">
-          </label>
           <button type="button" class="linkbtn" id="resetPrices">Reset to Vape Local prices</button>
         </div>
       </details>
@@ -693,6 +701,7 @@ textarea#summary { width: 100%; min-height: 190px; font: 14px/1.5 ui-monospace, 
 
     // Summary
     var store = $("store").value.trim();
+    document.title = store ? store + " · BA Day" : "Ignite BA Day Calculator";
     var date = new Date().toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
     var out = [
       "Ignite BA Day" + (store ? " – " + store : "") + " – " + date,
@@ -882,7 +891,14 @@ textarea#summary { width: 100%; min-height: 190px; font: 14px/1.5 ui-monospace, 
     } catch (e) { $("summary").select(); done("Text selected. Copy it from the box."); }
   });
 
+  $("todayDate").textContent = new Date().toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+  // One-line store name that wraps to fit: no line breaks, height follows the text.
+  function fitStore() { var t = $("store"); t.style.height = "auto"; t.style.height = t.scrollHeight + "px"; }
+  $("store").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); this.blur(); } });
+  $("store").addEventListener("input", function () { if (/\n/.test(this.value)) this.value = this.value.replace(/\s*\n\s*/g, " "); fitStore(); });
+  window.addEventListener("resize", fitStore);
   load();
+  fitStore();
   setTab(location.hash === "#forecast" ? "forecast" : "today");
   setMode(state.mode);
 })();

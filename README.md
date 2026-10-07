@@ -23,6 +23,7 @@ Everything else follows from those answers and the three Vape Local bundles:
 - **Comparison:** buying the bundle on its own against buying it with today's sales, split into now and later.
 - **The maths:** every step, line by line.
 - **Kits table:** what each bundle would cost at every number of kits sold.
+- **Store name:** the big heading at the top. Tap it to type the store name; it also goes in the summary and the browser tab.
 - **Summary:** a copyable message for the store owner.
 
 ### Page 2: 12-month forecast
