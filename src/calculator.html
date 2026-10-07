@@ -1,0 +1,516 @@
+<title>Ignite BA Day Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: shop-floor tool. One column on phone, two on tablet: input on the left, the retailer's result on the right. */
+:root {
+  --navy: #1d2a5e;
+  --navy-ink: #ffffff;
+  --yellow: #ffd200;
+  --yellow-ink: #1d2a5e;
+  --blue: #1f63e8;
+  --bg: #eef0f6;
+  --surface: #ffffff;
+  --fg: #161c33;
+  --muted: #5b6382;
+  --line: #d8dcea;
+  --good: #128a4a;
+  --good-bg: #e2f5ea;
+  --warn: #9a5b00;
+  --display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --body: "Barlow", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --r: 14px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --navy: #16204a; --navy-ink: #ffffff; --yellow: #ffd200; --yellow-ink: #16204a; --blue: #5b8dff;
+    --bg: #0d1226; --surface: #161d38; --fg: #eef0fa; --muted: #9aa2c4; --line: #2a3359;
+    --good: #4fd48a; --good-bg: #133626; --warn: #f2b84b; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --navy: #16204a; --navy-ink: #ffffff; --yellow: #ffd200; --yellow-ink: #16204a; --blue: #5b8dff;
+  --bg: #0d1226; --surface: #161d38; --fg: #eef0fa; --muted: #9aa2c4; --line: #2a3359;
+  --good: #4fd48a; --good-bg: #133626; --warn: #f2b84b; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 16px; line-height: 1.45; margin: 0; }
+.num { font-variant-numeric: tabular-nums; }
+.wrap { max-width: 1100px; margin: 0 auto; padding-inline: 16px; padding-block: 16px 40px; display: grid; gap: 16px; }
+
+header.bar { background: var(--navy); color: var(--navy-ink); border-radius: var(--r); padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: 12px; }
+.mark { background: var(--yellow); color: var(--yellow-ink); font-family: var(--display); font-weight: 800; font-size: 20px; letter-spacing: .06em; padding: 4px 10px; border-radius: 8px; }
+header h1 { font-family: var(--display); font-weight: 700; font-size: clamp(22px, 4vw, 30px); margin: 0; letter-spacing: .01em; text-wrap: balance; }
+header p { margin: 0; opacity: .8; font-size: 14px; }
+.chips { display: flex; gap: 0; border-radius: 8px; overflow: hidden; font-family: var(--display); font-weight: 700; font-style: italic; font-size: 17px; }
+.chips span { padding: 6px 14px; }
+.chips .rrp { background: var(--yellow); color: var(--yellow-ink); }
+.chips .mar { background: var(--blue); color: #fff; }
+
+.grid { display: grid; gap: 16px; grid-template-columns: 1fr; }
+@media (min-width: 860px) { .grid { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); align-items: start; } }
+
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; display: grid; gap: 16px; min-width: 0; }
+.panel h2 { font-family: var(--display); font-weight: 700; font-size: 22px; margin: 0; letter-spacing: .01em; }
+.eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+
+.mode { display: grid; grid-template-columns: 1fr 1fr; background: var(--bg); border-radius: 10px; padding: 4px; gap: 4px; }
+.mode button { border: 0; background: transparent; color: var(--muted); font: 600 15px var(--body); padding: 10px; border-radius: 8px; cursor: pointer; }
+.mode button[aria-pressed="true"] { background: var(--surface); color: var(--fg); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+
+.presets { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+@media (max-width: 520px) { .presets { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.presets button { border: 1px solid var(--line); background: var(--surface); color: var(--fg); border-radius: 10px; padding: 10px 8px; cursor: pointer; display: grid; gap: 2px; text-align: left; font-family: var(--body); }
+.presets button b { font: 700 19px var(--display); }
+.presets button span { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.presets button[aria-pressed="true"] { background: var(--navy); color: var(--navy-ink); border-color: var(--navy); }
+.presets button[aria-pressed="true"] span { color: var(--yellow); }
+.fields label.check { display: flex; align-items: center; gap: 8px; color: var(--fg); font-weight: 500; font-size: 14px; }
+.fields label.check input { width: 20px; height: 20px; }
+.stepper { display: grid; grid-template-columns: 64px minmax(0, 1fr) 64px; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); height: 72px; }
+.stepper button { border: 0; background: var(--blue); color: #fff; font-size: 32px; font-weight: 500; cursor: pointer; }
+.stepper button.minus { opacity: .55; }
+.stepper button.minus:hover, .stepper button.minus:focus-visible { opacity: 1; }
+.stepper input { border: 0; text-align: center; font: 700 36px var(--display); color: var(--fg); background: var(--surface); width: 100%; min-width: 0; }
+.money-in { display: flex; align-items: center; border: 1px solid var(--line); border-radius: 10px; height: 72px; padding-inline: 16px; background: var(--surface); }
+.money-in span { font: 700 32px var(--display); color: var(--muted); }
+.money-in input { border: 0; background: transparent; font: 700 36px var(--display); color: var(--fg); width: 100%; min-width: 0; padding-left: 6px; }
+.quick { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.quick small { color: var(--muted); width: 100%; font-size: 13px; }
+.quick button { border: 1px solid var(--line); background: var(--surface); color: var(--fg); font: 600 15px var(--body); padding: 8px 14px; border-radius: 8px; cursor: pointer; min-width: 56px; }
+.quick button:hover { border-color: var(--blue); }
+button:focus-visible, input:focus-visible { outline: 3px solid var(--yellow); outline-offset: 2px; }
+
+.takings { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; border-top: 1px dashed var(--line); padding-top: 14px; flex-wrap: wrap; }
+.takings b { font: 800 34px var(--display); }
+.takings span { color: var(--muted); font-size: 14px; }
+
+.progress { display: grid; gap: 8px; }
+.track { height: 14px; background: var(--bg); border-radius: 99px; overflow: hidden; border: 1px solid var(--line); }
+.fill { height: 100%; background: var(--yellow); width: 0; transition: width .35s ease; }
+.fill.done { background: var(--good); }
+.progress p { margin: 0; font-size: 14px; color: var(--muted); }
+.progress p strong { color: var(--fg); }
+
+details.settings { border: 1px solid var(--line); border-radius: 10px; padding: 0 14px; }
+details.settings summary { cursor: pointer; padding: 12px 0; font-weight: 600; }
+.fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; padding-bottom: 14px; }
+.fields label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); font-weight: 600; }
+.fields input { font: 600 17px var(--body); padding: 9px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); width: 100%; min-width: 0; }
+.fields .full { grid-column: 1 / -1; }
+.reset { justify-self: start; border: 0; background: none; color: var(--blue); font: 600 14px var(--body); cursor: pointer; padding: 0 0 12px; }
+
+/* Result */
+.hero { background: var(--navy); color: var(--navy-ink); border-radius: var(--r); padding: 20px; display: grid; gap: 14px; }
+.hero .eyebrow { color: var(--yellow); }
+.hero-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; }
+.stat { display: grid; gap: 2px; }
+.stat .k { font-size: 13px; opacity: .8; }
+.stat .v { font: 800 clamp(38px, 7vw, 54px) / 1 var(--display); }
+.stat .v.y { color: var(--yellow); }
+.status { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; padding: 6px 12px; border-radius: 99px; background: var(--yellow); color: var(--yellow-ink); justify-self: start; font-size: 15px; }
+.status.free { background: #2ecc71; color: #08301a; }
+.headline { font-family: var(--display); font-weight: 600; font-size: 22px; line-height: 1.2; margin: 0; text-wrap: balance; }
+
+.compare { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.cmp { border: 1px solid var(--line); border-radius: 12px; padding: 14px; display: grid; gap: 6px; min-width: 0; }
+.cmp.today { border: 2px solid var(--good); background: var(--good-bg); }
+.cmp .por { font: 800 40px / 1 var(--display); }
+.cmp.today .por { color: var(--good); }
+.cmp .meta { font-size: 13px; color: var(--muted); }
+.cmp .lift { font-weight: 700; color: var(--good); font-size: 14px; }
+
+.maths { width: 100%; border-collapse: collapse; font-size: 15px; }
+.maths td { padding: 9px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+.maths td:last-child { text-align: right; font-weight: 700; white-space: nowrap; padding-left: 12px; }
+.maths tr.total td { border-bottom: 0; border-top: 2px solid var(--fg); font-size: 17px; }
+.maths .op { color: var(--muted); font-weight: 500; }
+.maths tr.plus td:last-child { color: var(--good); }
+
+.ladder-wrap { overflow-x: auto; }
+.ladder { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 460px; }
+.ladder th { text-align: right; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); padding: 6px 8px; border-bottom: 1px solid var(--line); }
+.ladder th:first-child, .ladder td:first-child { text-align: left; }
+.ladder td { text-align: right; padding: 8px; border-bottom: 1px solid var(--line); }
+.ladder tr.cur td { background: var(--yellow); color: var(--yellow-ink); font-weight: 700; }
+.ladder tr { cursor: pointer; }
+.ladder tr:hover td { background: var(--bg); }
+.ladder tr.cur:hover td { background: var(--yellow); }
+
+.share { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.btn { border: 0; background: var(--yellow); color: var(--yellow-ink); font: 700 17px var(--body); padding: 12px 20px; border-radius: 10px; cursor: pointer; }
+.btn.ghost { background: transparent; color: var(--fg); border: 1px solid var(--line); }
+.toast { font-size: 14px; color: var(--good); font-weight: 600; }
+textarea#summary { width: 100%; min-height: 150px; font: 14px/1.5 ui-monospace, Menlo, Consolas, monospace; border: 1px solid var(--line); border-radius: 10px; padding: 10px; background: var(--bg); color: var(--fg); resize: vertical; }
+.note { font-size: 13px; color: var(--muted); margin: 0; }
+@media (prefers-reduced-motion: reduce) { .fill { transition: none; } }
+@media (max-width: 420px) { .compare { grid-template-columns: 1fr; } }
+</style>
+
+<div class="wrap">
+  <header class="bar">
+    <div class="brand">
+      <span class="mark">IGNITE</span>
+      <div>
+        <h1>BA Day Calculator</h1>
+        <p>What today's starter kit sales mean for the store</p>
+      </div>
+    </div>
+    <div class="chips num" aria-label="Agreed bundle">
+      <span class="rrp" id="chipRrp">£107.50</span><span class="mar" id="chipMar">£49.60 (46%)</span>
+    </div>
+  </header>
+
+  <div class="grid">
+    <!-- INPUT -->
+    <section class="panel" aria-labelledby="inTitle">
+      <div>
+        <div class="eyebrow">Step 1</div>
+        <h2 id="inTitle">Agreed bundle &amp; today's sales</h2>
+      </div>
+
+      <div class="presets" role="group" aria-label="Agreed bundle">
+        <button type="button" data-preset="starter"><b>Starter</b><span>£41.75 · RRP £112.35</span></button>
+        <button type="button" data-preset="medium"><b>Medium</b><span>£75.70 · RRP £202.20</span></button>
+        <button type="button" data-preset="pro"><b>Pro</b><span>£130.00 · RRP £347.00</span></button>
+        <button type="button" data-preset="example"><b>Example</b><span>£57.90 · RRP £107.50</span></button>
+      </div>
+
+      <div class="mode" role="group" aria-label="How to enter sales">
+        <button type="button" id="modeKits" aria-pressed="true">Kits sold</button>
+        <button type="button" id="modeCash" aria-pressed="false">£ taken</button>
+      </div>
+
+      <div id="kitsBox" class="stack" style="display:grid;gap:12px">
+        <div class="stepper">
+          <button type="button" class="minus" id="kitMinus" aria-label="One less kit">−</button>
+          <input id="kits" type="number" inputmode="numeric" min="0" step="1" value="10" aria-label="Starter kits sold">
+          <button type="button" id="kitPlus" aria-label="One more kit">+</button>
+        </div>
+        <div class="quick">
+          <small>Quick add:</small>
+          <button type="button" data-add="1">+1</button>
+          <button type="button" data-add="5">+5</button>
+          <button type="button" data-add="10">+10</button>
+          <button type="button" data-set="0">Clear</button>
+        </div>
+      </div>
+
+      <div id="cashBox" hidden style="display:grid;gap:12px">
+        <label class="money-in" for="cash"><span>£</span>
+          <input id="cash" type="number" inputmode="decimal" min="0" step="0.01" value="30" aria-label="Value of stock sold in pounds">
+        </label>
+        <div class="quick">
+          <small>Quick set:</small>
+          <button type="button" data-cash="30">£30</button>
+          <button type="button" data-cash="57.9">£57.90</button>
+          <button type="button" data-cash="100">£100</button>
+          <button type="button" data-cash="0">Clear</button>
+        </div>
+      </div>
+
+      <div class="takings">
+        <span>Cash in the till from BA sales</span>
+        <b class="num" id="takings">£109.90</b>
+      </div>
+
+      <div class="progress">
+        <div class="eyebrow">Free bundle progress</div>
+        <div class="track" role="progressbar" aria-label="Progress to a free bundle" aria-valuemin="0" aria-valuemax="100" id="track"><div class="fill" id="fill"></div></div>
+        <p id="progressText"></p>
+      </div>
+
+      <details class="settings">
+        <summary>Prices &amp; agreed bundle</summary>
+        <div class="fields">
+          <label class="full">Agreed bundle
+            <input id="bName" type="text" value="Ignite Starter Bundle">
+          </label>
+          <label>Kit retail price (£)
+            <input id="kitPrice" type="number" inputmode="decimal" step="0.01" min="0" value="10.99">
+          </label>
+          <label>Bundle cost to store (£<span class="vatlbl"> ex VAT</span>)
+            <input id="bCost" type="number" inputmode="decimal" step="0.01" min="0" value="41.75">
+          </label>
+          <label>Bundle sells for / RRP (£<span class="vatlbl"> inc VAT</span>)
+            <input id="bRrp" type="number" inputmode="decimal" step="0.01" min="0" value="112.35">
+          </label>
+          <label class="full check"><input id="vat" type="checkbox" checked> VAT-registered store (margin worked ex VAT, like Vape Local)</label>
+          <label>Store name (for summary)
+            <input id="store" type="text" placeholder="e.g. Costcutter High St">
+          </label>
+        </div>
+      </details>
+      <p class="note">The starter kits were given to the store free, so every kit the BA sells is 100% margin and goes towards the cost of the agreed replacement bundle.</p>
+    </section>
+
+    <!-- RESULT -->
+    <section class="panel" aria-labelledby="outTitle" aria-live="polite">
+      <div>
+        <div class="eyebrow">Step 2</div>
+        <h2 id="outTitle">What it means for the store</h2>
+      </div>
+
+      <div class="hero">
+        <span class="status" id="status">Bundle part paid</span>
+        <p class="headline" id="headline"></p>
+        <div class="hero-row">
+          <div class="stat"><span class="k">Store pays for bundle<span class="vatlbl"> (ex VAT)</span></span><span class="v num" id="pays">£0.00</span></div>
+          <div class="stat"><span class="k">Profit on return (POR)</span><span class="v y num" id="por">100%</span></div>
+          <div class="stat"><span class="k">Extra cash in the till<span class="vatlbl"> (ex VAT)</span></span><span class="v num" id="extra">£0.00</span></div>
+        </div>
+      </div>
+
+      <div class="compare">
+        <div class="cmp">
+          <span class="eyebrow">Buying the bundle normally</span>
+          <span class="por num" id="basePor">46%</span>
+          <span class="meta num" id="baseMeta">Pays £57.90, sells for £107.50</span>
+        </div>
+        <div class="cmp today">
+          <span class="eyebrow">With today's BA day</span>
+          <span class="por num" id="todayPor">100%</span>
+          <span class="meta num" id="todayMeta"></span>
+          <span class="lift num" id="lift"></span>
+        </div>
+      </div>
+
+      <div>
+        <div class="eyebrow" style="margin-bottom:4px">The maths</div>
+        <table class="maths num"><tbody id="maths"></tbody></table>
+      </div>
+
+      <div>
+        <div class="eyebrow" style="margin-bottom:4px">Kits sold ladder (tap a row)</div>
+        <div class="ladder-wrap">
+          <table class="ladder num">
+            <thead><tr><th>Kits sold</th><th>Taken</th><th>Store pays</th><th>POR</th><th>Extra cash</th></tr></thead>
+            <tbody id="ladder"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div style="display:grid;gap:10px">
+        <div class="eyebrow">Summary for the store owner</div>
+        <textarea id="summary" readonly aria-label="Summary text"></textarea>
+        <div class="share">
+          <button type="button" class="btn" id="copy">Copy summary</button>
+          <span class="toast" id="toast" role="status"></span>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+(function () {
+  var PRESETS = {
+    starter: { bName: "Ignite Starter Bundle", bCost: 41.75, bRrp: 112.35, vat: true },
+    medium: { bName: "Ignite Medium Bundle", bCost: 75.70, bRrp: 202.20, vat: true },
+    pro: { bName: "Ignite Pro Bundle", bCost: 130.00, bRrp: 347.00, vat: true },
+    example: { bName: "Example bundle", bCost: 57.90, bRrp: 107.50, vat: false }
+  };
+  var $ = function (id) { return document.getElementById(id); };
+  var state = { mode: "kits", kits: 10, cash: 30 };
+
+  function load() {
+    try {
+      var s = JSON.parse(localStorage.getItem("ignite-ba-calc") || "null");
+      if (!s) return;
+      ["kitPrice", "bCost", "bRrp", "bName", "store"].forEach(function (k) { if (s[k] != null) $(k).value = s[k]; });
+      if (s.vat != null) $("vat").checked = s.vat;
+      if (s.mode) state.mode = s.mode;
+      if (s.kits != null) state.kits = s.kits;
+      if (s.cash != null) state.cash = s.cash;
+    } catch (e) {}
+  }
+  function save() {
+    try {
+      localStorage.setItem("ignite-ba-calc", JSON.stringify({
+        kitPrice: $("kitPrice").value, bCost: $("bCost").value, bRrp: $("bRrp").value,
+        bName: $("bName").value, store: $("store").value, vat: $("vat").checked,
+        mode: state.mode, kits: state.kits, cash: state.cash
+      }));
+    } catch (e) {}
+  }
+
+  function num(v) { var n = parseFloat(v); return isFinite(n) && n > 0 ? n : 0; }
+  function gbp(n) { return "£" + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
+  function pct(n) { return Math.round(n * 100) + "%"; }
+  function round2(n) { return Math.round(n * 100) / 100; }
+
+  // Core maths: BA takings go towards the agreed bundle.
+  // VAT basis (as Vape Local): cost is ex VAT, RRP and kit takings are inc VAT, so both are divided by 1.2.
+  function calc(sales, p) {
+    var v = p.vat ? 1.2 : 1;
+    var net = round2(sales / v), rrpNet = round2(p.rrp / v);
+    var pays = Math.max(0, round2(p.cost - net));
+    var extra = Math.max(0, round2(net - p.cost));
+    var bundleProfit = round2(rrpNet - pays);
+    var por = rrpNet > 0 ? bundleProfit / rrpNet : 0;
+    return { sales: sales, net: net, rrpNet: rrpNet, pays: pays, extra: extra, bundleProfit: bundleProfit, por: por, total: round2(bundleProfit + extra) };
+  }
+
+  function prices() {
+    return { kit: num($("kitPrice").value), cost: num($("bCost").value), rrp: num($("bRrp").value), name: $("bName").value.trim() || "agreed bundle", vat: $("vat").checked };
+  }
+
+  function render() {
+    var p = prices();
+    var kitsLine = state.mode === "kits";
+    var sales = kitsLine ? round2(state.kits * p.kit) : round2(state.cash);
+    var r = calc(sales, p);
+    var base = calc(0, p);
+    var V = p.vat ? 1.2 : 1, kitNet = p.kit / V, ex = p.vat ? " ex VAT" : "";
+    var kitsToFree = kitNet > 0 ? Math.ceil(p.cost / kitNet - 1e-9) : 0;
+    document.querySelectorAll(".vatlbl").forEach(function (e) { e.hidden = !p.vat; });
+    document.querySelectorAll("[data-preset]").forEach(function (b) {
+      var q = PRESETS[b.dataset.preset];
+      b.setAttribute("aria-pressed", Math.abs(p.cost - q.bCost) < .005 && Math.abs(p.rrp - q.bRrp) < .005 && p.vat === q.vat);
+    });
+
+    $("chipRrp").textContent = gbp(p.rrp);
+    $("chipMar").textContent = gbp(base.bundleProfit) + " (" + pct(base.por) + ")";
+    $("takings").textContent = gbp(sales);
+
+    // progress
+    var frac = p.cost > 0 ? Math.min(1, r.net / p.cost) : 1;
+    $("fill").style.width = (frac * 100) + "%";
+    $("fill").classList.toggle("done", frac >= 1);
+    $("track").setAttribute("aria-valuenow", Math.round(frac * 100));
+    var left = round2(p.cost - r.net);
+    if (left > 0) {
+      var kitsLeft = kitNet > 0 ? Math.ceil(left / kitNet - 1e-9) : 0;
+      $("progressText").innerHTML = "<strong>" + gbp(left) + ex + "</strong> to go. Sell <strong>" + kitsLeft + " more kit" + (kitsLeft === 1 ? "" : "s") + "</strong> and the bundle is free (" + kitsToFree + " kits covers it).";
+    } else {
+      $("progressText").innerHTML = "<strong>Bundle fully paid for.</strong> Everything above " + gbp(p.cost) + ex + " is extra cash for the store.";
+    }
+
+    // hero
+    var st = $("status");
+    if (r.pays === 0 && p.cost > 0) { st.textContent = "Bundle is FREE"; st.className = "status free"; }
+    else if (sales > 0) { st.textContent = "Bundle part paid"; st.className = "status"; }
+    else { st.textContent = "No BA sales yet"; st.className = "status"; }
+
+    var unit = kitsLine ? state.kits + " starter kit" + (state.kits === 1 ? "" : "s") + " (" + gbp(sales) + ")" : gbp(sales) + " of stock";
+    var head;
+    if (sales <= 0) head = "Without BA sales the store pays " + gbp(p.cost) + ex + " for the bundle and makes " + pct(base.por) + " POR.";
+    else if (r.pays > 0) head = "The BA sold " + unit + ". The store now pays only " + gbp(r.pays) + ex + " for a bundle that sells for " + gbp(p.rrp) + ".";
+    else head = "The BA sold " + unit + ". The bundle costs the store nothing, and there's " + gbp(r.extra) + ex + " extra in the till.";
+    $("headline").textContent = head;
+
+    $("pays").textContent = gbp(r.pays);
+    $("por").textContent = pct(r.por);
+    $("extra").textContent = gbp(r.extra);
+
+    // compare
+    $("basePor").textContent = pct(base.por);
+    $("baseMeta").textContent = "Pays " + gbp(p.cost) + ex + ", sells for " + gbp(p.rrp) + (p.vat ? " inc VAT" : "") + ". Profit " + gbp(base.bundleProfit) + ex + ".";
+    $("todayPor").textContent = pct(r.por) + (r.extra > 0 ? " +" + gbp(r.extra) : "");
+    $("todayMeta").textContent = "Pays " + gbp(r.pays) + ex + ", sells for " + gbp(p.rrp) + (p.vat ? " inc VAT" : "") + ". Profit " + gbp(r.total) + ex + ".";
+    var lift = round2(r.total - base.bundleProfit);
+    $("lift").textContent = lift > 0 ? "+" + gbp(lift) + " more in the store's pocket" : "";
+
+    // maths table
+    var rows = [];
+    if (kitsLine) rows.push(["Starter kits sold by BA", state.kits + " × " + gbp(p.kit) + " = " + gbp(sales)]);
+    else rows.push(["Stock sold by BA", gbp(sales)]);
+    rows.push(["Kits were supplied free, so margin on them is", "100%"]);
+    if (p.vat) rows.push(["Takings ex VAT: " + gbp(sales) + " ÷ 1.2", gbp(r.net)]);
+    rows.push(["Cost of " + p.name + ex, gbp(p.cost)]);
+    rows.push(["<span class='op'>minus</span> BA takings put towards it", "−" + gbp(Math.min(r.net, p.cost))]);
+    rows.push(["<b>Store pays for the bundle" + ex + "</b>", gbp(r.pays)]);
+    if (p.vat) rows.push(["Bundle sells for " + gbp(p.rrp) + " inc VAT ÷ 1.2", gbp(r.rrpNet)]);
+    else rows.push(["Bundle sells for (RRP)", gbp(p.rrp)]);
+    rows.push(["Profit on bundle: " + gbp(r.rrpNet) + " − " + gbp(r.pays), gbp(r.bundleProfit)]);
+    rows.push(["POR: " + gbp(r.bundleProfit) + " ÷ " + gbp(r.rrpNet), pct(r.por)]);
+    if (r.extra > 0) rows.push(["Extra cash left over: " + gbp(r.net) + " − " + gbp(p.cost), "+" + gbp(r.extra), "plus"]);
+    rows.push(["<b>Total in the store's pocket" + ex + "</b>", gbp(r.total), "total"]);
+    $("maths").innerHTML = rows.map(function (rw) {
+      return "<tr class='" + (rw[2] || "") + "'><td>" + rw[0] + "</td><td>" + rw[1] + "</td></tr>";
+    }).join("");
+
+    // ladder
+    var maxK = Math.max(12, kitsToFree + 4, kitsLine ? state.kits : 0);
+    var steps = [];
+    for (var k = 0; k <= maxK; k++) {
+      if (maxK > 16 && k > 12 && k % 5 !== 0 && k !== (kitsLine ? state.kits : -1) && k !== maxK) continue;
+      steps.push(k);
+    }
+    $("ladder").innerHTML = steps.map(function (k) {
+      var x = calc(round2(k * p.kit), p);
+      var cur = kitsLine && k === state.kits ? " class='cur'" : "";
+      return "<tr data-k='" + k + "'" + cur + "><td>" + k + (k === kitsToFree ? " ★" : "") + "</td><td>" + gbp(x.sales) + "</td><td>" + gbp(x.pays) + "</td><td>" + pct(x.por) + "</td><td>" + (x.extra > 0 ? "+" + gbp(x.extra) : "–") + "</td></tr>";
+    }).join("");
+
+    // summary
+    var store = $("store").value.trim();
+    var d = new Date().toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+    var lines = [
+      "Ignite BA Day" + (store ? " – " + store : "") + " – " + d,
+      (kitsLine ? "Starter kits sold: " + state.kits + " × " + gbp(p.kit) + " = " + gbp(sales) : "Stock sold: " + gbp(sales)) + " (100% margin, kits supplied free)",
+      "",
+      p.name + ": costs " + gbp(p.cost) + ex + ", sells for " + gbp(p.rrp) + (p.vat ? " inc VAT" : ""),
+      "Normally: pay " + gbp(p.cost) + " → POR " + pct(base.por) + " (" + gbp(base.bundleProfit) + " profit)",
+      "Today: pay " + gbp(r.pays) + " → POR " + pct(r.por) + (r.extra > 0 ? " plus " + gbp(r.extra) + " extra in the till" : ""),
+      "",
+      "Total in your pocket: " + gbp(r.total) + ex + (lift > 0 ? " (" + gbp(lift) + " more than buying the bundle normally)" : "")
+    ];
+    $("summary").value = lines.join("\n");
+
+    // inputs reflect state
+    if (document.activeElement !== $("kits")) $("kits").value = state.kits;
+    if (document.activeElement !== $("cash")) $("cash").value = state.cash;
+    save();
+  }
+
+  function setMode(m) {
+    state.mode = m;
+    $("modeKits").setAttribute("aria-pressed", m === "kits");
+    $("modeCash").setAttribute("aria-pressed", m === "cash");
+    $("kitsBox").hidden = m !== "kits";
+    $("cashBox").hidden = m !== "cash";
+    render();
+  }
+  function setKits(n) { state.kits = Math.max(0, Math.round(n) || 0); render(); }
+
+  $("modeKits").addEventListener("click", function () { setMode("kits"); });
+  $("modeCash").addEventListener("click", function () { setMode("cash"); });
+  $("kitPlus").addEventListener("click", function () { setKits(state.kits + 1); });
+  $("kitMinus").addEventListener("click", function () { setKits(state.kits - 1); });
+  $("kits").addEventListener("input", function () { state.kits = Math.max(0, Math.floor(num(this.value))); render(); });
+  $("kits").addEventListener("blur", function () { this.value = state.kits; });
+  $("cash").addEventListener("input", function () { state.cash = round2(num(this.value)); render(); });
+  $("cash").addEventListener("blur", function () { this.value = state.cash; });
+  document.querySelectorAll("[data-add]").forEach(function (b) { b.addEventListener("click", function () { setKits(state.kits + +b.dataset.add); }); });
+  document.querySelectorAll("[data-set]").forEach(function (b) { b.addEventListener("click", function () { setKits(+b.dataset.set); }); });
+  document.querySelectorAll("[data-cash]").forEach(function (b) { b.addEventListener("click", function () { state.cash = +b.dataset.cash; render(); }); });
+  ["kitPrice", "bCost", "bRrp", "bName", "store"].forEach(function (id) { $(id).addEventListener("input", render); });
+  $("vat").addEventListener("change", render);
+  document.querySelectorAll("[data-preset]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var q = PRESETS[b.dataset.preset];
+      $("bName").value = q.bName; $("bCost").value = q.bCost.toFixed(2); $("bRrp").value = q.bRrp.toFixed(2); $("vat").checked = q.vat;
+      render();
+    });
+  });
+  $("ladder").addEventListener("click", function (e) {
+    var tr = e.target.closest("tr[data-k]");
+    if (!tr) return;
+    if (state.mode !== "kits") setMode("kits");
+    setKits(+tr.dataset.k);
+  });
+  $("copy").addEventListener("click", function () {
+    var t = $("summary").value;
+    function done(msg) { $("toast").textContent = msg; setTimeout(function () { $("toast").textContent = ""; }, 2500); }
+    try {
+      navigator.clipboard.writeText(t).then(function () { done("Copied"); }, function () { $("summary").select(); done("Text selected, copy it from the box"); });
+    } catch (e) { $("summary").select(); done("Text selected, copy it from the box"); }
+  });
+
+  load();
+  setMode(state.mode);
+})();
+</script>
