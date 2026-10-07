@@ -3,13 +3,25 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Ignite BA Day Calculator: what today's starter kit sales put in the retailer's pocket.">
+<meta name="theme-color" content="#1d2a5e">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="BA Day">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+/* Keep content clear of the iPad status bar and home indicator when opened from the Home Screen. */
+:root { padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px); background: #1d2a5e; }
+html, body { -webkit-text-size-adjust: 100%; }
+button { touch-action: manipulation; }
+</style>
 </head>
 <body>
 <title>Ignite BA Day Calculator</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600;700&display=swap">
 <style>
 /* Layout: shop-floor tool. One column on phone, two on tablet: input on the left, the retailer's result on the right. */
 :root {
@@ -596,5 +608,17 @@ textarea#summary { width: 100%; min-height: 150px; font: 14px/1.5 ui-monospace, 
 })();
 </script>
 
+<script>
+if ("serviceWorker" in navigator && location.protocol !== "file:") {
+  window.addEventListener("load", function () {
+    var hadController = !!navigator.serviceWorker.controller;
+    navigator.serviceWorker.register("sw.js").catch(function () {});
+    // When a new version is installed, reload once so the BA is on the latest maths.
+    navigator.serviceWorker.addEventListener("controllerchange", function () {
+      if (hadController) location.reload();
+    });
+  });
+}
+</script>
 </body>
 </html>

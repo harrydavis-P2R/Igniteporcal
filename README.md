@@ -28,6 +28,19 @@ The three bundle presets use Vape Local's VAT basis: RRP and kit takings are div
 - The BA sells £30: the store pays only £27.90, so POR = 74%
 - The BA sells £100: the store pays £0, so POR = 100%, plus £42.10 extra in the till
 
-## Use
+## Install on an iPad (works offline)
 
-Open `index.html` in a browser on a phone or tablet. Edit `src/calculator.html`, then run `./build.sh` to regenerate `index.html`.
+The app is a PWA, served at https://igniteporcal.vercel.app.
+
+1. Open the link in **Safari** on the iPad while it has signal.
+2. Tap **Share**, then **Add to Home Screen**, then **Add**.
+3. Open **BA Day** from the Home Screen. It runs full screen like an app and works with no signal from then on.
+
+Prices, the chosen bundle and the store name are remembered on the device. When an update is pushed, the app picks it up the next time it is opened with signal.
+
+## Editing
+
+- `src/calculator.html` is the calculator. It is also published as a Claude artifact.
+- Run `python3 build.py` after editing. It regenerates `index.html` (with app/iPad tags and local fonts), `manifest.webmanifest` and `sw.js` (the offline cache, versioned from the file contents).
+- `fonts/` holds self-hosted Barlow and Barlow Condensed (SIL Open Font License). `icons/` holds the app icons.
+- `vercel.json` stops the service worker and page being cached by the CDN, so updates reach installed iPads.
