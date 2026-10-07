@@ -21,18 +21,20 @@
   --display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
   --body: "Barlow", "Segoe UI", system-ui, -apple-system, sans-serif;
   --r: 14px;
+  --c-today: #b58500;
+  --c-reg: #1f63e8;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --navy: #16204a; --navy-ink: #ffffff; --yellow: #ffd200; --yellow-ink: #16204a; --blue: #5b8dff;
     --bg: #0d1226; --surface: #161d38; --fg: #eef0fa; --muted: #9aa2c4; --line: #2a3359;
-    --good: #4fd48a; --good-bg: #133626; --warn: #f2b84b; color-scheme: dark;
+    --good: #4fd48a; --good-bg: #133626; --warn: #f2b84b; --c-today: #b88a00; --c-reg: #4f7ff0; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --navy: #16204a; --navy-ink: #ffffff; --yellow: #ffd200; --yellow-ink: #16204a; --blue: #5b8dff;
   --bg: #0d1226; --surface: #161d38; --fg: #eef0fa; --muted: #9aa2c4; --line: #2a3359;
-  --good: #4fd48a; --good-bg: #133626; --warn: #f2b84b; color-scheme: dark;
+  --good: #4fd48a; --good-bg: #133626; --warn: #f2b84b; --c-today: #b88a00; --c-reg: #4f7ff0; color-scheme: dark;
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
@@ -174,6 +176,33 @@ textarea#summary { width: 100%; min-height: 190px; font: 14px/1.5 ui-monospace, 
 .share { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
 .btn { border: 0; background: var(--yellow); color: var(--yellow-ink); font: 700 17px var(--body); padding: 12px 20px; border-radius: 10px; cursor: pointer; }
 .toast { font-size: 14px; color: var(--good); font-weight: 600; }
+/* Tabs */
+.tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 5px; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; }
+.tabs button { border: 0; background: transparent; color: var(--muted); font: 700 17px var(--body); padding: 11px 8px; border-radius: 9px; cursor: pointer; }
+.tabs button[aria-selected="true"] { background: var(--navy); color: var(--navy-ink); }
+
+/* Forecast */
+.flow { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+@media (max-width: 640px) { .flow { grid-template-columns: 1fr 1fr; } }
+.flow div { background: var(--bg); border-radius: 12px; padding: 12px; display: grid; gap: 2px; align-content: start; position: relative; }
+.flow b { font: 800 30px / 1.05 var(--display); }
+.flow span { font-size: 13px; color: var(--muted); }
+.legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -1px; margin-right: 6px; }
+.chart-wrap { position: relative; }
+.chart { width: 100%; height: auto; display: block; overflow: visible; }
+.chart text { fill: var(--muted); font: 12px var(--body); }
+.chart .grid line { stroke: var(--line); stroke-width: 1; }
+.chart .hit { fill: transparent; cursor: pointer; }
+.chart .hit:hover, .chart .hit.on { fill: var(--fg); fill-opacity: .05; }
+.tip { position: absolute; pointer-events: none; background: var(--surface); color: var(--fg); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; font-size: 13px; box-shadow: 0 6px 18px rgba(0,0,0,.15); white-space: nowrap; transform: translate(-50%, -100%); }
+.tip b { display: block; font-size: 14px; }
+.ftable { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 460px; }
+.ftable th { text-align: right; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); padding: 6px 8px; border-bottom: 1px solid var(--line); }
+.ftable td { text-align: right; padding: 7px 8px; border-bottom: 1px solid var(--line); }
+.ftable th:first-child, .ftable td:first-child { text-align: left; }
+.ftable tr.sold td { color: var(--good); font-weight: 700; }
+.fields select { font: 600 17px var(--body); padding: 9px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); width: 100%; }
 @media (prefers-reduced-motion: reduce) { .track .fill { transition: none; } }
 </style>
 
@@ -189,7 +218,12 @@ textarea#summary { width: 100%; min-height: 190px; font: 14px/1.5 ui-monospace, 
     <span class="vatnote">All £ figures ex VAT, as on Vape Local</span>
   </header>
 
-  <div class="grid">
+  <div class="tabs" role="tablist" aria-label="Pages">
+    <button type="button" role="tab" id="tabToday" aria-selected="true" aria-controls="pageToday">1 · Today</button>
+    <button type="button" role="tab" id="tabForecast" aria-selected="false" aria-controls="pageForecast">2 · 12-month forecast</button>
+  </div>
+
+  <div class="grid" id="pageToday" role="tabpanel" aria-labelledby="tabToday">
     <!-- TODAY -->
     <section class="panel" aria-labelledby="inTitle">
       <div>
@@ -344,6 +378,86 @@ textarea#summary { width: 100%; min-height: 190px; font: 14px/1.5 ui-monospace, 
       </div>
     </section>
   </div>
+
+  <div class="grid" id="pageForecast" role="tabpanel" aria-labelledby="tabForecast" hidden>
+    <section class="panel" aria-labelledby="fIn">
+      <div>
+        <div class="eyebrow">Built on today's sales</div>
+        <h2 id="fIn">Your new regulars</h2>
+      </div>
+      <p class="hint" id="fFrom"></p>
+      <div class="fields num" style="padding:0">
+        <label>Customers who come back (%)
+          <input id="fRate" type="number" inputmode="numeric" min="0" max="100" step="1" value="30">
+        </label>
+        <label>Spend per visit (£ inc VAT)
+          <input id="fSpend" type="number" inputmode="decimal" min="0" step="0.01" value="6.99">
+        </label>
+        <label>How often they buy
+          <select id="fFreq">
+            <option value="52">Every week</option>
+            <option value="26">Every 2 weeks</option>
+            <option value="12">Every month</option>
+          </select>
+        </label>
+        <label>Your margin on reorders (%)
+          <input id="fMargin" type="number" inputmode="numeric" min="0" max="100" step="1" value="55">
+        </label>
+        <label>Forecast (months)
+          <input id="fMonths" type="number" inputmode="numeric" min="1" max="24" step="1" value="12">
+        </label>
+      </div>
+      <p class="hint">Spend per visit is an average across Ignite pods and refills. Margin is 55% to match Vape Local bundle pricing. Change either to suit the store.</p>
+      <div style="display:grid;gap:8px">
+        <div class="eyebrow">How it works</div>
+        <ol class="hint" style="margin:0;padding-left:18px;display:grid;gap:4px;font-size:14px">
+          <li>Some of today's kit buyers come back for pods and refills.</li>
+          <li>Their first purchases sell through the bundle today paid for. That profit is already on page 1.</li>
+          <li>After that you reorder, and every sale makes your margin on top.</li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="fOut" aria-live="polite">
+      <div>
+        <div class="eyebrow">What it means for you</div>
+        <h2 id="fOut">Forecast</h2>
+      </div>
+      <p class="pick" id="fPick"></p>
+      <div class="flow num">
+        <div><span>Kits sold today</span><b id="fKits"></b></div>
+        <div><span>New regulars</span><b id="fRegs"></b><span id="fRegsS"></span></div>
+        <div><span>Their spend a month</span><b id="fMonthly"></b><span id="fMonthlyS"></span></div>
+        <div><span>Bundle sold through in</span><b id="fSellThrough"></b><span id="fSellS"></span></div>
+      </div>
+
+      <div class="hero">
+        <div class="eyebrow" id="fHeroTitle"></div>
+        <div class="hero-row num">
+          <div class="stat"><span class="k">Today's deal (page 1)</span><span class="v" id="fToday"></span><span class="s" id="fTodayS"></span></div>
+          <div class="stat"><span class="k">Profit on reorders</span><span class="v" id="fReorder"></span><span class="s" id="fReorderS"></span></div>
+          <div class="stat"><span class="k">Total profit</span><span class="v y" id="fTotal"></span><span class="s" id="fTotalS"></span></div>
+        </div>
+      </div>
+
+      <div style="display:grid;gap:8px">
+        <div class="eyebrow">Profit building up, month by month (ex VAT)</div>
+        <div class="legend"><span><i style="background:var(--c-today)"></i>Today's deal</span><span><i style="background:var(--c-reg)"></i>Profit on reorders from regulars</span></div>
+        <div class="chart-wrap"><svg class="chart num" id="fChart" role="img" aria-label="Cumulative profit by month"></svg><div class="tip" id="fTip" hidden></div></div>
+      </div>
+
+      <div>
+        <div class="eyebrow" style="margin-bottom:4px">Month by month</div>
+        <div class="ladder-wrap">
+          <table class="ftable num">
+            <thead><tr><th>Month</th><th>Regulars' sales (inc VAT)</th><th>Bundle stock left</th><th>Reorder profit</th><th>Total profit so far</th></tr></thead>
+            <tbody id="fRows"></tbody>
+          </table>
+        </div>
+      </div>
+      <p class="hint">A forecast, not a promise. It assumes regulars keep buying for the whole period. All £ figures ex VAT unless shown.</p>
+    </section>
+  </div>
 </div>
 
 <script>
@@ -355,7 +469,8 @@ textarea#summary { width: 100%; min-height: 190px; font: 14px/1.5 ui-monospace, 
   var PRICE_IDS = Object.keys(DEFAULT_PRICES);
   var $ = function (id) { return document.getElementById(id); };
   // sel: the bundle the retailer is looking at; null means follow the best free bundle.
-  var state = { mode: "kits", kits: 10, cash: 50, free: true, bought: "starter", sel: null };
+  var state = { mode: "kits", kits: 10, cash: 50, free: true, bought: "starter", sel: null, tab: "today" };
+  var FORECAST_IDS = ["fRate", "fSpend", "fFreq", "fMargin", "fMonths"];
 
   function num(v) { var n = parseFloat(v); return isFinite(n) && n > 0 ? n : 0; }
   function r2(n) { return Math.round(n * 100) / 100; }
@@ -366,7 +481,7 @@ textarea#summary { width: 100%; min-height: 190px; font: 14px/1.5 ui-monospace, 
     try {
       var s = JSON.parse(localStorage.getItem("ignite-ba-calc-v2") || "null");
       if (!s) return;
-      PRICE_IDS.concat(["store"]).forEach(function (k) { if (s[k] != null) $(k).value = s[k]; });
+      PRICE_IDS.concat(["store"], FORECAST_IDS).forEach(function (k) { if (s[k] != null) $(k).value = s[k]; });
       ["mode", "kits", "cash", "free", "bought", "sel"].forEach(function (k) { if (s[k] !== undefined) state[k] = s[k]; });
       if (KEYS.indexOf(state.bought) < 0) state.bought = "starter";
       if (state.sel !== null && KEYS.indexOf(state.sel) < 0) state.sel = null;
@@ -375,7 +490,7 @@ textarea#summary { width: 100%; min-height: 190px; font: 14px/1.5 ui-monospace, 
   function save() {
     try {
       var s = { mode: state.mode, kits: state.kits, cash: state.cash, free: state.free, bought: state.bought, sel: state.sel, store: $("store").value };
-      PRICE_IDS.forEach(function (k) { s[k] = $(k).value; });
+      PRICE_IDS.concat(FORECAST_IDS).forEach(function (k) { s[k] = $(k).value; });
       localStorage.setItem("ignite-ba-calc-v2", JSON.stringify(s));
     } catch (e) {}
   }
@@ -554,6 +669,8 @@ textarea#summary { width: 100%; min-height: 190px; font: 14px/1.5 ui-monospace, 
       return "<tr data-k='" + n + "'" + (kitsMode && n === state.kits ? " class='cur'" : "") + "><td>" + n + "</td><td>" + gbp(n * p.kit) + "</td>" + cells + "</tr>";
     }).join("");
 
+    var F = forecast({ kitsSold: kitsSold, b: b, d: d });
+
     // Summary
     var store = $("store").value.trim();
     var date = new Date().toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
@@ -572,6 +689,11 @@ textarea#summary { width: 100%; min-height: 190px; font: 14px/1.5 ui-monospace, 
       "  Total profit: " + gbp(d.total) + " | POR " + pct(d.por),
       "  On its own it would be " + gbp(d.baseProfit) + " | POR " + pct(d.basePor) + (lift > 0 ? " (today adds " + gbp(lift) + ")" : ""),
       "",
+      "",
+      "Forecast (" + F.months + " months): " + F.regs + " regular" + (F.regs === 1 ? "" : "s") + " (" + pct(F.rate) + " of " + kitsSold + " kits) spending " + gbp(F.spend) + " " + F.freqText + " = " + gbp(F.monthlyInc) + " a month",
+      "  Sells through your " + b.short + " Bundle in " + F.sellText + ", then " + gbp(F.reorder) + " profit on reorders",
+      "  Total profit over " + F.months + " months: " + gbp(F.total),
+      "",
       "All figures ex VAT unless shown."
     ];
     $("summary").value = out.join("\n");
@@ -579,6 +701,115 @@ textarea#summary { width: 100%; min-height: 190px; font: 14px/1.5 ui-monospace, 
     if (document.activeElement !== $("kits")) $("kits").value = state.kits;
     if (document.activeElement !== $("cash")) $("cash").value = state.cash;
     save();
+  }
+
+
+  // Page 2: regulars forecast. Regulars' first purchases sell through the bundle (already counted on page 1);
+  // after that the store reorders and makes its margin on every sale.
+  function forecast(c) {
+    var rate = Math.min(100, num($("fRate").value)) / 100;
+    var spend = num($("fSpend").value);
+    var perYear = +$("fFreq").value || 52;
+    var margin = Math.min(100, num($("fMargin").value)) / 100;
+    var months = Math.max(1, Math.min(24, Math.round(num($("fMonths").value)) || 12));
+    var regs = Math.round(c.kitsSold * rate);
+    var monthlyInc = r2(regs * spend * perYear / 12);
+    var monthlyEx = monthlyInc / VAT;
+    var B = c.b.rrpEx;
+    var sellMonths = monthlyEx > 0 ? B / monthlyEx : Infinity;
+    var freqText = perYear === 52 ? "a week" : perYear === 26 ? "a fortnight" : "a month";
+    var rows = [], m;
+    for (m = 1; m <= months; m++) {
+      var cum = monthlyEx * m;
+      var reorderProfit = r2(Math.max(0, cum - B) * margin);
+      rows.push({ m: m, salesInc: r2(monthlyInc), stockLeft: r2(Math.max(0, B - cum)), reorder: reorderProfit, total: r2(c.d.total + reorderProfit) });
+    }
+    var last = rows[rows.length - 1];
+    var weeks = sellMonths * 52 / 12;
+    var sellText = !isFinite(sellMonths) ? "no time (no regulars)" : weeks < 13 ? Math.max(1, Math.ceil(weeks)) + " weeks" : (Math.round(sellMonths * 10) / 10) + " months";
+    if (!isFinite(sellMonths)) sellText = "–";
+    var F = { rate: rate, spend: spend, regs: regs, months: months, monthlyInc: monthlyInc, reorder: last.reorder, total: last.total, sellText: sellText, freqText: freqText };
+
+    $("fFrom").innerHTML = "From page 1: <b>" + c.kitsSold + " kits sold</b>, replacement <b>" + c.b.name + "</b>, " + (state.free ? "stock supplied free" : "stock bought in the " + NAMES[state.bought] + " Bundle") + ".";
+    $("fKits").textContent = c.kitsSold;
+    $("fRegs").textContent = regs;
+    $("fRegsS").textContent = pct(rate) + " come back";
+    $("fMonthly").textContent = gbp(monthlyInc);
+    $("fMonthlyS").textContent = gbp(spend) + " " + freqText + " each, inc VAT";
+    $("fSellThrough").textContent = isFinite(sellMonths) ? sellText : "–";
+    $("fSellS").textContent = "your " + c.b.short + " Bundle (" + gbp(c.b.rrp) + " RRP)";
+    if (regs === 0) $("fPick").textContent = c.kitsSold > 0 ? "Sell a few more kits today and some of those customers come back every " + freqText.replace("a ", "") + "." : "Every kit sold today brings customers back for pods and refills.";
+    else $("fPick").textContent = c.kitsSold + " kits today brings in about " + regs + " regular" + (regs === 1 ? "" : "s") + ". They sell through your " + c.b.short + " Bundle in " + sellText + ", then make you " + gbp(r2(monthlyEx * margin)) + " a month on reorders.";
+    $("fHeroTitle").textContent = "Over " + months + " months · " + c.b.name;
+    $("fToday").textContent = gbp(c.d.total);
+    $("fTodayS").textContent = "kits sold + " + c.b.short + " Bundle";
+    $("fReorder").textContent = gbp(last.reorder);
+    $("fReorderS").textContent = pct(margin) + " of regulars' spend after the bundle sells";
+    $("fTotal").textContent = gbp(last.total);
+    $("fTotalS").textContent = "vs " + gbp(c.d.baseProfit) + " buying the bundle on its own";
+
+    $("fRows").innerHTML = rows.map(function (r) {
+      return "<tr" + (r.stockLeft === 0 && r.reorder > 0 && (r.m === 1 || rows[r.m - 2].stockLeft > 0) ? " class='sold'" : "") + "><td>" + r.m + "</td><td>" + gbp(r.salesInc) + "</td><td>" + (r.stockLeft > 0 ? gbp(r.stockLeft) : "Sold through") + "</td><td>" + gbp(r.reorder) + "</td><td>" + gbp(r.total) + "</td></tr>";
+    }).join("");
+    drawChart(rows, c.d.total);
+    return F;
+  }
+
+  // Stacked bars: today's deal (constant) under cumulative reorder profit. One axis, recessive grid.
+  function drawChart(rows, todayProfit) {
+    var svg = $("fChart"), W = 640, H = 260, L = 52, R = 8, T = 12, Bm = 28;
+    var max = Math.max(1, rows[rows.length - 1].total);
+    var step = niceStep(max / 4), top = Math.ceil(max / step) * step;
+    var n = rows.length, bw = (W - L - R) / n, barW = Math.max(6, Math.min(36, bw * 0.62));
+    function y(v) { return T + (H - T - Bm) * (1 - v / top); }
+    var g = "<g class='grid'>";
+    for (var v = 0; v <= top + 1e-9; v += step) g += "<line x1='" + L + "' x2='" + (W - R) + "' y1='" + y(v) + "' y2='" + y(v) + "'/><text x='" + (L - 6) + "' y='" + (y(v) + 4) + "' text-anchor='end'>£" + Math.round(v) + "</text>";
+    g += "</g>";
+    var bars = "", hits = "";
+    rows.forEach(function (r, i) {
+      var cx = L + bw * i + bw / 2, x = cx - barW / 2;
+      var y0 = y(0), yT = y(todayProfit), yR = y(r.total);
+      // today's deal segment, rounded only where it is the top of the bar
+      bars += seg(x, yT, barW, y0 - yT, "var(--c-today)", r.reorder <= 0);
+      if (r.reorder > 0) bars += seg(x, yR, barW, Math.max(0, yT - yR - 2), "var(--c-reg)", true);
+      if (n <= 12 || i % 2 === 1 || i === n - 1) bars += "<text x='" + cx + "' y='" + (H - 8) + "' text-anchor='middle'>" + r.m + "</text>";
+      hits += "<rect class='hit' data-i='" + i + "' x='" + (L + bw * i) + "' y='" + T + "' width='" + bw + "' height='" + (H - T - Bm) + "'/>";
+    });
+    var lastR = rows[rows.length - 1];
+    var label = "<text x='" + (L + bw * (n - 0.5)) + "' y='" + (y(lastR.total) - 6) + "' text-anchor='end' style='fill:var(--fg);font-weight:700'>" + gbp(lastR.total) + "</text>";
+    svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+    svg.innerHTML = g + bars + label + "<text x='" + L + "' y='" + (H - 8) + "' text-anchor='end' dx='-6'>Month</text>" + hits;
+    var tip = $("fTip");
+    svg.onmousemove = svg.onclick = function (e) {
+      var h = e.target.closest && e.target.closest(".hit");
+      svg.querySelectorAll(".hit.on").forEach(function (x) { x.classList.remove("on"); });
+      if (!h) { tip.hidden = true; return; }
+      h.classList.add("on");
+      var r = rows[+h.dataset.i], box = svg.getBoundingClientRect(), sc = box.width / W;
+      tip.innerHTML = "<b>Month " + r.m + ": " + gbp(r.total) + "</b>Today's deal " + gbp(todayProfit) + "<br>Reorder profit " + gbp(r.reorder) + (r.stockLeft > 0 ? "<br>Bundle stock left " + gbp(r.stockLeft) : "");
+      tip.hidden = false;
+      var half = tip.offsetWidth / 2, cxp = (L + bw * (+h.dataset.i) + bw / 2) * sc;
+      tip.style.left = Math.max(half, Math.min(box.width - half, cxp)) + "px";
+      tip.style.top = Math.max(tip.offsetHeight, y(r.total) * sc - 6) + "px";
+    };
+    svg.onmouseleave = function () { tip.hidden = true; svg.querySelectorAll(".hit.on").forEach(function (x) { x.classList.remove("on"); }); };
+  }
+  function seg(x, y, w, h, fill, roundTop) {
+    if (h <= 0) return "";
+    var rr = roundTop ? Math.min(4, h, w / 2) : 0;
+    return "<path fill='" + fill + "' d='M" + x + "," + (y + h) + "V" + (y + rr) + "Q" + x + "," + y + " " + (x + rr) + "," + y + "H" + (x + w - rr) + "Q" + (x + w) + "," + y + " " + (x + w) + "," + (y + rr) + "V" + (y + h) + "Z'/>";
+  }
+  function niceStep(raw) {
+    var p10 = Math.pow(10, Math.floor(Math.log10(Math.max(raw, 1e-6)))), f = raw / p10;
+    return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * p10;
+  }
+
+  function setTab(t) {
+    state.tab = t;
+    $("tabToday").setAttribute("aria-selected", t === "today");
+    $("tabForecast").setAttribute("aria-selected", t === "forecast");
+    $("pageToday").hidden = t !== "today";
+    $("pageForecast").hidden = t !== "forecast";
   }
 
   function setMode(m) {
@@ -613,6 +844,9 @@ textarea#summary { width: 100%; min-height: 190px; font: 14px/1.5 ui-monospace, 
     var t = e.target.closest("[data-tier]");
     if (t) { state.sel = t.dataset.tier; render(); }
   });
+  FORECAST_IDS.forEach(function (id) { $(id).addEventListener("input", render); $(id).addEventListener("change", render); });
+  $("tabToday").addEventListener("click", function () { setTab("today"); window.scrollTo(0, 0); });
+  $("tabForecast").addEventListener("click", function () { setTab("forecast"); window.scrollTo(0, 0); });
   $("autoBtn").addEventListener("click", function () { state.sel = null; render(); });
   $("ladder").addEventListener("click", function (e) {
     var tr = e.target.closest("tr[data-k]");
@@ -629,6 +863,7 @@ textarea#summary { width: 100%; min-height: 190px; font: 14px/1.5 ui-monospace, 
   });
 
   load();
+  setTab(location.hash === "#forecast" ? "forecast" : "today");
   setMode(state.mode);
 })();
 </script>

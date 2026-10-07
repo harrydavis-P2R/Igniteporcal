@@ -25,6 +25,18 @@ Everything else follows from those answers and the three Vape Local bundles:
 - **Kits table:** what each bundle would cost at every number of kits sold.
 - **Summary:** a copyable message for the store owner.
 
+### Page 2: 12-month forecast
+
+Some of today's kit buyers become regulars and come back for pods and refills. Defaults: 30% come back, £6.99 a visit (inc VAT, average of pods and refills), every week, 55% margin on reorders, 12 months. All of these can be edited.
+
+- Regulars = kits sold × 30% (rounded)
+- Their spend a month = regulars × spend per visit × 52 ÷ 12
+- Their first purchases sell through the replacement bundle. That profit is already counted on page 1, so the forecast doesn't count it twice.
+- After the bundle sells through, every sale makes the reorder margin: reorder profit = (regulars' spend ex VAT so far − bundle RRP ex VAT) × 55%
+- Total profit = page 1's total profit + reorder profit
+
+Example: 10 kits → 3 regulars → £90.87 a month → the Medium Bundle sells through in 10 weeks → £407.11 reorder profit over 12 months, £591.49 in total.
+
 ### The maths (all ex VAT, as on Vape Local)
 
 - Takings ex VAT = kits × £10.99 ÷ 1.2
