@@ -1,32 +1,40 @@
 # Ignite BA Day Calculator
 
-A one-page tool for Brand Ambassadors. They enter how many £10.99 Ignite starter kits they sold in a store that day. The page then shows what that means for the retailer:
+A one-page app the Brand Ambassador fills in with the retailer. It shows what the day's £10.99 Ignite starter kit sales put in the retailer's pocket, and which replacement bundle those sales pay for.
 
-- how much of the agreed replacement bundle the BA's takings cover
-- what the store still pays for the bundle (or £0 when it's free)
-- the store's profit on return (POR) on the bundle, plus any extra cash left in the till
-- the full maths, a kits-sold ladder, and a summary to copy for the store owner
+## How it works
 
-The BA fills it in with the retailer, so the copy talks to the retailer directly ("you pay", "your pocket").
+The BA answers two questions:
 
-**Did you get the CTU / starter stock free?** When the answer is Yes (the default), the page shows a tick, says what the free stock is worth (Ignite CTU, £78.27 ex VAT) and treats every kit sold as 100% margin. When it is No, the retailer bought their first stock as one of the bundles (Starter, Medium or Pro). The kits then carry that bundle's 55% margin. The total shows the usual bundle margin plus the margin on today's kits on top.
+1. **Did you get the CTU / starter stock free?** If yes, every kit sold is 100% profit (shown with a tick). If no, the BA picks the bundle the stock came from, and the kits carry that bundle's margin.
+2. **How many starter kits did we sell?** (or the £ taken)
 
-## Bundles
+Everything else follows from those answers and the three Vape Local bundles:
 
-| Preset | Store cost | RRP | Margin with no BA sales |
-|---|---|---|---|
-| Starter | £41.75 + VAT | £112.35 inc VAT | £51.88 / 55% |
-| Medium | £75.70 + VAT | £202.20 inc VAT | £92.80 / 55% |
-| Pro | £130.00 + VAT | £347.00 inc VAT | £159.17 / 55% |
-| Example | £57.90 | £107.50 | £49.60 / 46% (no VAT) |
+| Bundle | Your price (ex VAT) | RRP (inc VAT) | Margin on its own | Free at |
+|---|---|---|---|---|
+| Starter | £41.75 | £112.35 | £51.88 / 55% | 5 kits |
+| Medium | £75.70 | £202.20 | £92.80 / 55% | 9 kits |
+| Pro | £130.00 | £347.00 | £159.17 / 55% | 15 kits |
 
-The three bundle presets use Vape Local's VAT basis: RRP and kit takings are divided by 1.2, and the bundle cost is ex VAT. You can switch VAT off and edit the prices under **Prices & agreed bundle**.
+- **Progress bar:** the day's takings, with a marker where each bundle becomes free.
+- **Bundle cards:** for each bundle, free or what's left to pay, kits needed, profit and POR. It shows the best free bundle until the BA taps another.
+- **Your bundle:** for the selected bundle, what you pay now, what's left in the till, what the bundle sells for later, and POR.
+- **Comparison:** buying the bundle on its own against buying it with today's sales, split into now and later.
+- **The maths:** every step, line by line.
+- **Kits table:** what each bundle would cost at every number of kits sold.
+- **Summary:** a copyable message for the store owner.
 
-### Worked example (Example preset)
+### The maths (all ex VAT, as on Vape Local)
 
-- No BA day: the store pays £57.90 and sells for £107.50, so POR = 46%
-- The BA sells £30: the store pays only £27.90, so POR = 74%
-- The BA sells £100: the store pays £0, so POR = 100%, plus £42.10 extra in the till
+- Takings ex VAT = kits × £10.99 ÷ 1.2
+- You pay now = bundle price − takings (never below £0)
+- Left in your till = takings − bundle price (when over £0)
+- Bundle sells later for = RRP ÷ 1.2
+- POR = (RRP ex VAT − you pay now) ÷ RRP ex VAT
+- Total profit = RRP ex VAT − you pay now + left in your till − cost of kits sold (only when the stock wasn't free)
+
+Example: 10 kits, free stock, Medium Bundle. £109.90 taken = £91.58 ex VAT. That covers the £75.70 bundle with £15.88 left in the till. The bundle sells later for £168.50, so POR is 100% and total profit is £184.38, against £92.80 (55%) when buying it on its own.
 
 ## Install on an iPad (works offline)
 

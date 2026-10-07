@@ -3,7 +3,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600;700&display=swap">
 <style>
-/* Layout: shop-floor tool. One column on phone, two on tablet: input on the left, the retailer's result on the right. */
+/* Layout: shop-floor tool the BA fills in with the retailer. Left: today's answers. Right: what it means, bundle by bundle. One column on phone. */
 :root {
   --navy: #1d2a5e;
   --navy-ink: #ffffff;
@@ -17,7 +17,7 @@
   --line: #d8dcea;
   --good: #128a4a;
   --good-bg: #e2f5ea;
-  --warn: #9a5b00;
+  --warn: #a35a00;
   --display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
   --body: "Barlow", "Segoe UI", system-ui, -apple-system, sans-serif;
   --r: 14px;
@@ -38,154 +38,143 @@
 [hidden] { display: none !important; }
 body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 16px; line-height: 1.45; margin: 0; }
 .num { font-variant-numeric: tabular-nums; }
-.wrap { max-width: 1100px; margin: 0 auto; padding-inline: 16px; padding-block: 16px 40px; display: grid; gap: 16px; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-inline: 16px; padding-block: 16px 40px; display: grid; gap: 16px; }
+button:focus-visible, input:focus-visible { outline: 3px solid var(--yellow); outline-offset: 2px; }
 
 header.bar { background: var(--navy); color: var(--navy-ink); border-radius: var(--r); padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .brand { display: flex; align-items: center; gap: 12px; }
 .mark { background: var(--yellow); color: var(--yellow-ink); font-family: var(--display); font-weight: 800; font-size: 20px; letter-spacing: .06em; padding: 4px 10px; border-radius: 8px; }
-header h1 { font-family: var(--display); font-weight: 700; font-size: clamp(22px, 4vw, 30px); margin: 0; letter-spacing: .01em; text-wrap: balance; }
+header h1 { font-family: var(--display); font-weight: 700; font-size: clamp(22px, 4vw, 30px); margin: 0; }
 header p { margin: 0; opacity: .8; font-size: 14px; }
-.chips { display: flex; gap: 0; border-radius: 8px; overflow: hidden; font-family: var(--display); font-weight: 700; font-style: italic; font-size: 17px; }
-.chips span { padding: 6px 14px; }
-.chips .rrp { background: var(--yellow); color: var(--yellow-ink); }
-.chips .mar { background: var(--blue); color: #fff; }
+.vatnote { font-size: 13px; font-weight: 600; background: rgba(255,255,255,.12); padding: 6px 12px; border-radius: 99px; }
 
 .grid { display: grid; gap: 16px; grid-template-columns: 1fr; }
-@media (min-width: 860px) { .grid { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); align-items: start; } }
-
-.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; display: grid; gap: 16px; min-width: 0; }
-.panel h2 { font-family: var(--display); font-weight: 700; font-size: 22px; margin: 0; letter-spacing: .01em; }
+@media (min-width: 900px) { .grid { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: start; } }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; display: grid; gap: 18px; min-width: 0; }
+.panel > * { min-width: 0; }
+.panel h2 { font-family: var(--display); font-weight: 700; font-size: 24px; margin: 0; }
 .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.q { display: grid; gap: 10px; }
+.q > .label { font-weight: 700; font-size: 16px; display: flex; gap: 8px; align-items: baseline; }
+.q > .label .n { flex: none; width: 24px; height: 24px; border-radius: 50%; background: var(--navy); color: var(--navy-ink); display: inline-grid; place-items: center; font: 700 14px var(--display); }
+.hint { margin: 0; font-size: 13px; color: var(--muted); }
 
-.mode { display: grid; grid-template-columns: 1fr 1fr; background: var(--bg); border-radius: 10px; padding: 4px; gap: 4px; }
-.mode button { border: 0; background: transparent; color: var(--muted); font: 600 15px var(--body); padding: 10px; border-radius: 8px; cursor: pointer; }
+.yn, .mode, .bought { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.bought { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.yn button, .bought button { border: 1px solid var(--line); background: var(--surface); color: var(--fg); font: 600 15px var(--body); padding: 12px 8px; border-radius: 10px; cursor: pointer; }
+.yn button[aria-pressed="true"].yes { background: var(--good); border-color: var(--good); color: #fff; }
+.yn button[aria-pressed="true"].no, .bought button[aria-pressed="true"] { background: var(--navy); border-color: var(--navy); color: var(--navy-ink); }
+.mode { background: var(--bg); border-radius: 10px; padding: 4px; gap: 4px; }
+.mode button { border: 0; background: transparent; color: var(--muted); font: 600 15px var(--body); padding: 9px; border-radius: 8px; cursor: pointer; }
 .mode button[aria-pressed="true"] { background: var(--surface); color: var(--fg); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
 
-.presets { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
-@media (max-width: 520px) { .presets { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-.presets button { border: 1px solid var(--line); background: var(--surface); color: var(--fg); border-radius: 10px; padding: 10px 8px; cursor: pointer; display: grid; gap: 2px; text-align: left; font-family: var(--body); }
-.presets button b { font: 700 19px var(--display); }
-.presets button span { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
-.presets button[aria-pressed="true"] { background: var(--navy); color: var(--navy-ink); border-color: var(--navy); }
-.presets button[aria-pressed="true"] span { color: var(--yellow); }
-.presets.bought { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.fields label.check { display: flex; align-items: center; gap: 8px; color: var(--fg); font-weight: 500; font-size: 14px; }
-.fields label.check input { width: 20px; height: 20px; }
-.ctu { display: grid; gap: 10px; border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
-.ctu .q { font-weight: 700; font-size: 15px; }
-.yn { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.yn button { border: 1px solid var(--line); background: var(--surface); color: var(--fg); font: 600 15px var(--body); padding: 12px 8px; border-radius: 10px; cursor: pointer; }
-.yn button[aria-pressed="true"].yes { background: var(--good); border-color: var(--good); color: #fff; }
-.yn button[aria-pressed="true"].no { background: var(--navy); border-color: var(--navy); color: var(--navy-ink); }
-.ctu .fields { padding-bottom: 0; }
-.ctu .hint { margin: 0; font-size: 13px; color: var(--muted); }
-.freetick { display: flex; align-items: center; gap: 10px; background: rgba(46, 204, 113, .16); border: 1px solid #2ecc71; border-radius: 10px; padding: 10px 12px; font-weight: 600; }
-.freetick .tk { flex: none; width: 28px; height: 28px; border-radius: 50%; background: #2ecc71; color: #08301a; display: grid; place-items: center; font-weight: 800; font-size: 17px; }
-.maths tr.tick td { color: var(--good); font-weight: 700; }
-.maths tr.minus td:last-child { color: var(--warn); }
 .stepper { display: grid; grid-template-columns: 64px minmax(0, 1fr) 64px; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); height: 72px; }
-.stepper button { border: 0; background: var(--blue); color: #fff; font-size: 32px; font-weight: 500; cursor: pointer; }
+.stepper button { border: 0; background: var(--blue); color: #fff; font-size: 32px; cursor: pointer; }
 .stepper button.minus { opacity: .55; }
-.stepper button.minus:hover, .stepper button.minus:focus-visible { opacity: 1; }
-.stepper input { border: 0; text-align: center; font: 700 36px var(--display); color: var(--fg); background: var(--surface); width: 100%; min-width: 0; }
+.stepper input { border: 0; text-align: center; font: 700 38px var(--display); color: var(--fg); background: var(--surface); width: 100%; min-width: 0; }
 .money-in { display: flex; align-items: center; border: 1px solid var(--line); border-radius: 10px; height: 72px; padding-inline: 16px; background: var(--surface); }
 .money-in span { font: 700 32px var(--display); color: var(--muted); }
-.money-in input { border: 0; background: transparent; font: 700 36px var(--display); color: var(--fg); width: 100%; min-width: 0; padding-left: 6px; }
-.quick { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.quick small { color: var(--muted); width: 100%; font-size: 13px; }
+.money-in input { border: 0; background: transparent; font: 700 38px var(--display); color: var(--fg); width: 100%; min-width: 0; padding-left: 6px; }
+.quick { display: flex; flex-wrap: wrap; gap: 8px; }
 .quick button { border: 1px solid var(--line); background: var(--surface); color: var(--fg); font: 600 15px var(--body); padding: 8px 14px; border-radius: 8px; cursor: pointer; min-width: 56px; }
-.quick button:hover { border-color: var(--blue); }
-button:focus-visible, input:focus-visible { outline: 3px solid var(--yellow); outline-offset: 2px; }
 
-.takings { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; border-top: 1px dashed var(--line); padding-top: 14px; flex-wrap: wrap; }
-.takings b { font: 800 34px var(--display); }
-.takings span { color: var(--muted); font-size: 14px; }
+.takings { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; align-items: baseline; border-top: 1px dashed var(--line); padding-top: 14px; }
+.takings b { font: 800 36px / 1 var(--display); text-align: right; }
+.takings .exv { grid-column: 2; text-align: right; font-size: 14px; color: var(--muted); }
+.takings .exv strong { color: var(--fg); }
 
-.progress { display: grid; gap: 8px; }
-.track { height: 14px; background: var(--bg); border-radius: 99px; overflow: hidden; border: 1px solid var(--line); }
-.fill { height: 100%; background: var(--yellow); width: 0; transition: width .35s ease; }
-.fill.done { background: var(--good); }
-.progress p { margin: 0; font-size: 14px; color: var(--muted); }
-.progress p strong { color: var(--fg); }
+/* Bundle ladder: one bar, a marker where each bundle becomes free */
+.track { position: relative; padding-top: 4px; }
+.track .rail { height: 16px; border-radius: 99px; background: var(--bg); border: 1px solid var(--line); overflow: hidden; }
+.track .fill { height: 100%; width: 0; background: var(--yellow); transition: width .35s ease; }
+.marks { position: relative; height: 54px; margin-top: 4px; }
+.mk { position: absolute; top: 0; transform: translateX(-100%); text-align: right; font-size: 12px; line-height: 1.25; color: var(--muted); white-space: nowrap; padding-right: 2px; }
+.mk::before { content: ""; position: absolute; right: 0; top: -24px; height: 22px; border-right: 2px dashed var(--muted); }
+.mk b { display: block; font: 700 15px var(--display); color: var(--fg); }
+.mk.hit b { color: var(--good); }
+.mk.hit::before { border-right: 2px solid var(--good); }
 
 details.settings { border: 1px solid var(--line); border-radius: 10px; padding: 0 14px; }
 details.settings summary { cursor: pointer; padding: 12px 0; font-weight: 600; }
-.fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; padding-bottom: 14px; }
+.fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; padding-bottom: 14px; }
 .fields label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); font-weight: 600; }
 .fields input { font: 600 17px var(--body); padding: 9px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); width: 100%; min-width: 0; }
 .fields .full { grid-column: 1 / -1; }
-.reset { justify-self: start; border: 0; background: none; color: var(--blue); font: 600 14px var(--body); cursor: pointer; padding: 0 0 12px; }
+.fields .grp { grid-column: 1 / -1; font-weight: 700; color: var(--fg); font-size: 14px; margin-top: 4px; }
+.linkbtn { border: 0; background: none; color: var(--blue); font: 600 14px var(--body); cursor: pointer; padding: 0; }
 
-/* Result */
-.hero { background: var(--navy); color: var(--navy-ink); border-radius: var(--r); padding: 20px; display: grid; gap: 14px; }
-.hero .eyebrow { color: var(--yellow); }
-.hero-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; }
-.stat { display: grid; gap: 2px; }
-.stat .k { font-size: 13px; opacity: .8; }
-.stat .v { font: 800 clamp(38px, 7vw, 54px) / 1 var(--display); }
-.stat .v.y { color: var(--yellow); }
-.status { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; padding: 6px 12px; border-radius: 99px; background: var(--yellow); color: var(--yellow-ink); justify-self: start; font-size: 15px; }
-.status.free { background: #2ecc71; color: #08301a; }
-.headline { font-family: var(--display); font-weight: 600; font-size: 22px; line-height: 1.2; margin: 0; text-wrap: balance; }
-
-.compare { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.cmp { border: 1px solid var(--line); border-radius: 12px; padding: 14px; display: grid; gap: 6px; min-width: 0; }
-.cmp.today { border: 2px solid var(--good); background: var(--good-bg); }
-.cmp .por { font: 800 40px / 1 var(--display); }
-.cmp.today .por { color: var(--good); }
-.cmp .meta { font-size: 13px; color: var(--muted); }
+/* Bundle cards */
+.pick { margin: 0; font-family: var(--display); font-weight: 600; font-size: 22px; line-height: 1.2; text-wrap: balance; }
 .tiers { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-@media (max-width: 520px) { .tiers { grid-template-columns: 1fr; } }
-.tier { border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: grid; gap: 6px; text-align: left; background: var(--surface); color: var(--fg); font-family: var(--body); cursor: pointer; min-width: 0; align-content: start; }
-.tier:hover { border-color: var(--blue); }
-.tier.sel { outline: 3px solid var(--blue); outline-offset: -1px; }
+@media (max-width: 560px) { .tiers { grid-template-columns: 1fr; } }
+.tier { position: relative; border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: grid; gap: 6px; text-align: left; background: var(--surface); color: var(--fg); font-family: var(--body); cursor: pointer; min-width: 0; align-content: start; }
 .tier.free { background: var(--good-bg); border-color: var(--good); }
-.tier .nm { font: 700 20px var(--display); display: flex; justify-content: space-between; gap: 6px; align-items: baseline; }
+.tier.sel { box-shadow: 0 0 0 3px var(--blue); }
+.tier .tag { position: absolute; top: -10px; right: 10px; background: var(--blue); color: #fff; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 2px 8px; border-radius: 99px; }
+.tier .nm { font: 700 21px var(--display); display: flex; justify-content: space-between; gap: 6px; align-items: baseline; }
 .tier .nm small { font: 600 13px var(--body); color: var(--muted); }
-.tier .pill { justify-self: start; font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 99px; background: var(--bg); color: var(--fg); }
-.tier.free .pill { background: var(--good); color: #fff; }
-.tier .big { font: 800 28px / 1 var(--display); }
+.tier .big { font: 800 30px / 1 var(--display); }
 .tier.free .big { color: var(--good); }
-.tier .bar { height: 8px; border-radius: 99px; background: var(--bg); overflow: hidden; }
-.tier .bar i { display: block; height: 100%; background: var(--yellow); }
-.tier.free .bar i { background: var(--good); }
 .tier .sub { font-size: 13px; color: var(--muted); }
 .tier .sub b { color: var(--fg); }
-.pick { margin: 0; font-family: var(--display); font-weight: 600; font-size: 20px; line-height: 1.25; text-wrap: balance; }
-.cmp .lines { display: grid; gap: 4px; font-size: 14px; margin: 4px 0 0; }
-.cmp .lines div { display: flex; justify-content: space-between; gap: 10px; }
-.cmp .lines dt { color: var(--muted); }
-.cmp .lines dd { margin: 0; font-weight: 700; white-space: nowrap; }
-.cmp .lines .when { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
-.cmp .lines .tot { border-top: 1px solid var(--line); padding-top: 6px; margin-top: 2px; }
-.cmp .lines .tot dt { color: var(--fg); font-weight: 700; }
-.cmp .lift { font-weight: 700; color: var(--good); font-size: 14px; }
+.autorow { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; align-items: center; font-size: 13px; color: var(--muted); }
+
+/* Selected bundle deal */
+.hero { background: var(--navy); color: var(--navy-ink); border-radius: var(--r); padding: 20px; display: grid; gap: 14px; }
+.hero .eyebrow { color: var(--yellow); }
+.freetick { display: flex; align-items: center; gap: 10px; background: rgba(46, 204, 113, .16); border: 1px solid #2ecc71; border-radius: 10px; padding: 10px 12px; font-weight: 600; }
+.freetick .tk { flex: none; width: 28px; height: 28px; border-radius: 50%; background: #2ecc71; color: #08301a; display: grid; place-items: center; font-weight: 800; }
+.headline { font-family: var(--display); font-weight: 600; font-size: 23px; line-height: 1.2; margin: 0; text-wrap: balance; }
+.hero-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 14px; }
+.stepper input::-webkit-outer-spin-button, .stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.stepper input { -moz-appearance: textfield; }
+.stat { display: grid; gap: 2px; align-content: start; }
+.stat .k { font-size: 13px; opacity: .8; }
+.stat .v { font: 800 clamp(30px, 4.2vw, 42px) / 1 var(--display); }
+.stat .v.y { color: var(--yellow); }
+.stat .s { font-size: 12px; opacity: .75; }
+
+.compare { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 460px) { .compare { grid-template-columns: 1fr; } }
+.cmp { border: 1px solid var(--line); border-radius: 12px; padding: 14px; display: grid; gap: 4px; min-width: 0; align-content: start; }
+.cmp.today { border: 2px solid var(--good); background: var(--good-bg); }
+.cmp .por { font: 800 38px / 1 var(--display); }
+.cmp.today .por { color: var(--good); }
+.lines { display: grid; gap: 4px; font-size: 14px; margin: 6px 0 0; }
+.lines div { display: flex; justify-content: space-between; gap: 10px; }
+.lines dt { color: var(--muted); }
+.lines dd { margin: 0; font-weight: 700; white-space: nowrap; }
+.lines .when { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
+.lines .tot { border-top: 1px solid var(--line); padding-top: 6px; margin-top: 2px; font-size: 16px; }
+.lines .tot dt { color: var(--fg); font-weight: 700; }
+.lift { font-weight: 700; color: var(--good); font-size: 14px; margin-top: 4px; }
 
 .maths { width: 100%; border-collapse: collapse; font-size: 15px; }
-.maths td { padding: 9px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+.maths td { padding: 8px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
 .maths td:last-child { text-align: right; font-weight: 700; white-space: nowrap; padding-left: 12px; }
-.maths tr.total td { border-bottom: 0; border-top: 2px solid var(--fg); font-size: 17px; }
-.maths .op { color: var(--muted); font-weight: 500; }
-.maths tr.plus td:last-child { color: var(--good); }
+.maths tr.sec td { color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding-top: 14px; border-bottom: 0; }
+.maths tr.key td { font-weight: 700; }
+.maths tr.good td:last-child, .maths tr.tick td { color: var(--good); }
+.maths tr.minus td:last-child { color: var(--warn); }
+.maths tr.total td { border-bottom: 0; border-top: 2px solid var(--fg); font-size: 17px; font-weight: 700; }
 
 .ladder-wrap { overflow-x: auto; }
-.ladder { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 460px; }
-.ladder th { text-align: right; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); padding: 6px 8px; border-bottom: 1px solid var(--line); }
+.ladder { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 470px; }
+.ladder th { text-align: right; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); padding: 6px 8px; border-bottom: 1px solid var(--line); }
 .ladder th:first-child, .ladder td:first-child { text-align: left; }
-.ladder td { text-align: right; padding: 8px; border-bottom: 1px solid var(--line); }
-.ladder tr.cur td { background: var(--yellow); color: var(--yellow-ink); font-weight: 700; }
+.ladder th.sel { color: var(--blue); }
+.ladder td { text-align: right; padding: 7px 8px; border-bottom: 1px solid var(--line); }
+.ladder td.f { color: var(--good); font-weight: 700; }
+.ladder td.f small { font-weight: 600; }
 .ladder tr { cursor: pointer; }
 .ladder tr:hover td { background: var(--bg); }
-.ladder tr.cur:hover td { background: var(--yellow); }
+.ladder tr.cur td, .ladder tr.cur:hover td { background: var(--yellow); color: var(--yellow-ink); font-weight: 700; }
 
+textarea#summary { width: 100%; min-height: 190px; font: 14px/1.5 ui-monospace, Menlo, Consolas, monospace; border: 1px solid var(--line); border-radius: 10px; padding: 10px; background: var(--bg); color: var(--fg); resize: vertical; }
 .share { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
 .btn { border: 0; background: var(--yellow); color: var(--yellow-ink); font: 700 17px var(--body); padding: 12px 20px; border-radius: 10px; cursor: pointer; }
-.btn.ghost { background: transparent; color: var(--fg); border: 1px solid var(--line); }
 .toast { font-size: 14px; color: var(--good); font-weight: 600; }
-textarea#summary { width: 100%; min-height: 150px; font: 14px/1.5 ui-monospace, Menlo, Consolas, monospace; border: 1px solid var(--line); border-radius: 10px; padding: 10px; background: var(--bg); color: var(--fg); resize: vertical; }
-.note { font-size: 13px; color: var(--muted); margin: 0; }
-@media (prefers-reduced-motion: reduce) { .fill { transition: none; } }
-@media (max-width: 420px) { .compare { grid-template-columns: 1fr; } }
+@media (prefers-reduced-motion: reduce) { .track .fill { transition: none; } }
 </style>
 
 <div class="wrap">
@@ -197,152 +186,136 @@ textarea#summary { width: 100%; min-height: 150px; font: 14px/1.5 ui-monospace, 
         <p>What today's starter kit sales put in your pocket</p>
       </div>
     </div>
-    <div class="chips num" aria-label="Agreed bundle">
-      <span class="rrp" id="chipRrp">£107.50</span><span class="mar" id="chipMar">£49.60 (46%)</span>
-    </div>
+    <span class="vatnote">All £ figures ex VAT, as on Vape Local</span>
   </header>
 
   <div class="grid">
-    <!-- INPUT -->
+    <!-- TODAY -->
     <section class="panel" aria-labelledby="inTitle">
       <div>
-        <div class="eyebrow">Step 1</div>
-        <h2 id="inTitle">Agreed bundle &amp; today's sales</h2>
+        <div class="eyebrow">Fill in with the retailer</div>
+        <h2 id="inTitle">Today</h2>
       </div>
 
-      <div class="presets" role="group" aria-label="Agreed bundle">
-        <button type="button" data-preset="starter"><b>Starter</b><span>£41.75 · RRP £112.35</span></button>
-        <button type="button" data-preset="medium"><b>Medium</b><span>£75.70 · RRP £202.20</span></button>
-        <button type="button" data-preset="pro"><b>Pro</b><span>£130.00 · RRP £347.00</span></button>
-        <button type="button" data-preset="example"><b>Example</b><span>£57.90 · RRP £107.50</span></button>
-      </div>
-
-      <div class="ctu">
-        <div class="q">Did you get the CTU / starter stock free?</div>
-        <div class="yn" role="group" aria-label="Was the CTU stock free">
+      <div class="q">
+        <div class="label"><span class="n">1</span>Did you get the CTU / starter stock free?</div>
+        <div class="yn" role="group" aria-label="Was the starter stock free">
           <button type="button" class="yes" id="freeYes" aria-pressed="true">✓ Yes, free</button>
           <button type="button" class="no" id="freeNo" aria-pressed="false">No, we bought a bundle</button>
         </div>
-        <div class="fields" id="freeFields">
-          <label><span>Free stock value (£<span class="vatlbl"> ex VAT</span>)</span>
-            <input id="ctuCost" type="number" inputmode="decimal" step="0.01" min="0" value="78.27">
-          </label>
-        </div>
         <div id="boughtBox" hidden style="display:grid;gap:8px">
-          <div class="q">Which bundle did you buy?</div>
-          <div class="presets bought" role="group" aria-label="Bundle the store bought">
-            <button type="button" data-bought="starter"><b>Starter</b><span>£41.75 · 55%</span></button>
-            <button type="button" data-bought="medium"><b>Medium</b><span>£75.70 · 55%</span></button>
-            <button type="button" data-bought="pro"><b>Pro</b><span>£130.00 · 55%</span></button>
+          <div class="hint">Which bundle did you buy it in?</div>
+          <div class="bought" role="group" aria-label="Bundle the stock came from">
+            <button type="button" data-bought="starter">Starter</button>
+            <button type="button" data-bought="medium">Medium</button>
+            <button type="button" data-bought="pro">Pro</button>
           </div>
         </div>
-        <p class="hint" id="ctuHint"></p>
+        <p class="hint" id="freeHint"></p>
       </div>
 
-      <div class="mode" role="group" aria-label="How to enter sales">
-        <button type="button" id="modeKits" aria-pressed="true">Kits sold</button>
-        <button type="button" id="modeCash" aria-pressed="false">£ taken</button>
-      </div>
-
-      <div id="kitsBox" class="stack" style="display:grid;gap:12px">
-        <div class="stepper">
-          <button type="button" class="minus" id="kitMinus" aria-label="One less kit">−</button>
-          <input id="kits" type="number" inputmode="numeric" min="0" step="1" value="10" aria-label="Starter kits sold">
-          <button type="button" id="kitPlus" aria-label="One more kit">+</button>
+      <div class="q">
+        <div class="label"><span class="n">2</span>How many starter kits did we sell?</div>
+        <div class="mode" role="group" aria-label="How to enter sales">
+          <button type="button" id="modeKits" aria-pressed="true">Kits sold</button>
+          <button type="button" id="modeCash" aria-pressed="false">£ taken</button>
         </div>
-        <div class="quick">
-          <small>Quick add:</small>
-          <button type="button" data-add="1">+1</button>
-          <button type="button" data-add="5">+5</button>
-          <button type="button" data-add="10">+10</button>
-          <button type="button" data-set="0">Clear</button>
+        <div id="kitsBox" style="display:grid;gap:10px">
+          <div class="stepper">
+            <button type="button" class="minus" id="kitMinus" aria-label="One less kit">−</button>
+            <input id="kits" type="number" inputmode="numeric" min="0" step="1" value="10" aria-label="Starter kits sold">
+            <button type="button" id="kitPlus" aria-label="One more kit">+</button>
+          </div>
+          <div class="quick">
+            <button type="button" data-add="1">+1</button>
+            <button type="button" data-add="5">+5</button>
+            <button type="button" data-add="10">+10</button>
+            <button type="button" data-set="0">Clear</button>
+          </div>
         </div>
-      </div>
-
-      <div id="cashBox" hidden style="display:grid;gap:12px">
-        <label class="money-in" for="cash"><span>£</span>
-          <input id="cash" type="number" inputmode="decimal" min="0" step="0.01" value="30" aria-label="Value of stock sold in pounds">
-        </label>
-        <div class="quick">
-          <small>Quick set:</small>
-          <button type="button" data-cash="30">£30</button>
-          <button type="button" data-cash="57.9">£57.90</button>
-          <button type="button" data-cash="100">£100</button>
-          <button type="button" data-cash="0">Clear</button>
+        <div id="cashBox" hidden style="display:grid;gap:10px">
+          <label class="money-in" for="cash"><span>£</span>
+            <input id="cash" type="number" inputmode="decimal" min="0" step="0.01" value="50" aria-label="Pounds taken including VAT">
+          </label>
+          <p class="hint">Enter the till total including VAT.</p>
         </div>
       </div>
 
       <div class="takings">
-        <span>Cash in your till from today's sales</span>
-        <b class="num" id="takings">£109.90</b>
+        <span>In your till today</span>
+        <b class="num" id="takings">£0.00</b>
+        <span class="exv num">That's <strong id="takingsEx">£0.00</strong> ex VAT</span>
       </div>
 
-      <div class="progress">
-        <div class="eyebrow">Free bundle progress</div>
-        <div class="track" role="progressbar" aria-label="Progress to a free bundle" aria-valuemin="0" aria-valuemax="100" id="track"><div class="fill" id="fill"></div></div>
-        <p id="progressText"></p>
+      <div class="q">
+        <div class="eyebrow">Towards a free bundle (ex VAT)</div>
+        <div class="track">
+          <div class="rail" role="progressbar" aria-label="Today's takings towards the bundles" aria-valuemin="0" aria-valuemax="100" id="rail"><div class="fill" id="fill"></div></div>
+          <div class="marks num" id="marks"></div>
+        </div>
       </div>
 
       <details class="settings">
-        <summary>Prices &amp; agreed bundle</summary>
+        <summary>Prices &amp; store name</summary>
         <div class="fields">
-          <label class="full">Agreed bundle
-            <input id="bName" type="text" value="Ignite Starter Bundle">
-          </label>
-          <label>Kit retail price (£)
+          <label>Starter kit retail (£ inc VAT)
             <input id="kitPrice" type="number" inputmode="decimal" step="0.01" min="0" value="10.99">
           </label>
-          <label><span>Bundle cost to store (£<span class="vatlbl"> ex VAT</span>)</span>
-            <input id="bCost" type="number" inputmode="decimal" step="0.01" min="0" value="41.75">
+          <label>Free CTU value (£ ex VAT)
+            <input id="ctuValue" type="number" inputmode="decimal" step="0.01" min="0" value="78.27">
           </label>
-          <label><span>Bundle sells for / RRP (£<span class="vatlbl"> inc VAT</span>)</span>
-            <input id="bRrp" type="number" inputmode="decimal" step="0.01" min="0" value="112.35">
-          </label>
-          <label class="full check"><input id="vat" type="checkbox" checked> VAT-registered store (margin worked ex VAT, like Vape Local)</label>
-          <label>Store name (for summary)
+          <span class="grp">Bundles: your price (ex VAT) and RRP (inc VAT)</span>
+          <label>Starter price<input id="starterCost" type="number" inputmode="decimal" step="0.01" min="0" value="41.75"></label>
+          <label>Starter RRP<input id="starterRrp" type="number" inputmode="decimal" step="0.01" min="0" value="112.35"></label>
+          <label>Medium price<input id="mediumCost" type="number" inputmode="decimal" step="0.01" min="0" value="75.70"></label>
+          <label>Medium RRP<input id="mediumRrp" type="number" inputmode="decimal" step="0.01" min="0" value="202.20"></label>
+          <label>Pro price<input id="proCost" type="number" inputmode="decimal" step="0.01" min="0" value="130.00"></label>
+          <label>Pro RRP<input id="proRrp" type="number" inputmode="decimal" step="0.01" min="0" value="347.00"></label>
+          <label class="full">Store name (for the summary)
             <input id="store" type="text" placeholder="e.g. Costcutter High St">
           </label>
+          <button type="button" class="linkbtn" id="resetPrices">Reset to Vape Local prices</button>
         </div>
       </details>
-      <p class="note" id="note"></p>
     </section>
 
-    <!-- RESULT -->
+    <!-- WHAT IT MEANS -->
     <section class="panel" aria-labelledby="outTitle" aria-live="polite">
       <div>
-        <div class="eyebrow">Step 2</div>
-        <h2 id="outTitle">What it means for your store</h2>
+        <div class="eyebrow">What it means for you</div>
+        <h2 id="outTitle">Your replacement bundle</h2>
+      </div>
+
+      <p class="pick" id="pick"></p>
+      <div class="tiers num" id="tiers"></div>
+      <div class="autorow">
+        <span id="autoText"></span>
+        <button type="button" class="linkbtn" id="autoBtn" hidden>Show the best free bundle</button>
       </div>
 
       <div class="hero">
-        <span class="status" id="status">Bundle part paid</span>
+        <div class="eyebrow" id="heroTitle"></div>
         <div class="freetick" id="freeTick"><span class="tk">✓</span><span id="freeTickText"></span></div>
         <p class="headline" id="headline"></p>
-        <div class="hero-row">
-          <div class="stat"><span class="k">You pay for the bundle<span class="vatlbl"> (ex VAT)</span></span><span class="v num" id="pays">£0.00</span></div>
-          <div class="stat"><span class="k">Your profit on return (POR)</span><span class="v y num" id="por">100%</span></div>
-          <div class="stat"><span class="k">Extra cash in your till now<span class="vatlbl"> (ex VAT)</span></span><span class="v num" id="extra">£0.00</span></div>
-          <div class="stat"><span class="k">Future sales of the bundle at RRP</span><span class="v num" id="future">£0.00</span></div>
+        <div class="hero-row num">
+          <div class="stat"><span class="k">You pay now</span><span class="v" id="sPay"></span><span class="s" id="sPayS"></span></div>
+          <div class="stat"><span class="k">Left in your till</span><span class="v" id="sLeft"></span><span class="s">after paying for it</span></div>
+          <div class="stat"><span class="k">Bundle sells later for</span><span class="v" id="sLater"></span><span class="s" id="sLaterS"></span></div>
+          <div class="stat"><span class="k">Profit on return</span><span class="v y" id="sPor"></span><span class="s" id="sPorS"></span></div>
         </div>
       </div>
 
-      <div style="display:grid;gap:10px">
-        <div class="eyebrow">Which bundle do today's sales pay for?</div>
-        <p class="pick" id="pick"></p>
-        <div class="tiers num" id="tiers"></div>
-      </div>
-
-      <div class="compare">
+      <div class="compare num">
         <div class="cmp">
-          <span class="eyebrow">Buying the bundle on its own</span>
-          <span class="por num" id="basePor">46%</span>
-          <dl class="lines num" id="baseMeta"></dl>
+          <span class="eyebrow">Buying it on its own</span>
+          <span class="por" id="basePor"></span>
+          <dl class="lines" id="baseLines"></dl>
         </div>
         <div class="cmp today">
           <span class="eyebrow">With today's sales</span>
-          <span class="por num" id="todayPor">100%</span>
-          <dl class="lines num" id="todayMeta"></dl>
-          <span class="lift num" id="lift"></span>
+          <span class="por" id="todayPor"></span>
+          <dl class="lines" id="todayLines"></dl>
+          <span class="lift" id="lift"></span>
         </div>
       </div>
 
@@ -352,10 +325,10 @@ textarea#summary { width: 100%; min-height: 150px; font: 14px/1.5 ui-monospace, 
       </div>
 
       <div>
-        <div class="eyebrow" style="margin-bottom:4px">Kits sold ladder (tap a row)</div>
+        <div class="eyebrow" style="margin-bottom:4px">What you'd pay for each bundle, by kits sold (tap a row)</div>
         <div class="ladder-wrap">
           <table class="ladder num">
-            <thead><tr><th>Kits sold</th><th>Taken</th><th>Store pays</th><th>POR</th><th>Extra cash</th><th>In pocket</th></tr></thead>
+            <thead><tr><th>Kits sold</th><th>Till (inc VAT)</th><th id="hStarter">Starter</th><th id="hMedium">Medium</th><th id="hPro">Pro</th></tr></thead>
             <tbody id="ladder"></tbody>
           </table>
         </div>
@@ -375,249 +348,234 @@ textarea#summary { width: 100%; min-height: 150px; font: 14px/1.5 ui-monospace, 
 
 <script>
 (function () {
-  var PRESETS = {
-    starter: { bName: "Ignite Starter Bundle", bCost: 41.75, bRrp: 112.35, vat: true },
-    medium: { bName: "Ignite Medium Bundle", bCost: 75.70, bRrp: 202.20, vat: true },
-    pro: { bName: "Ignite Pro Bundle", bCost: 130.00, bRrp: 347.00, vat: true },
-    example: { bName: "Example bundle", bCost: 57.90, bRrp: 107.50, vat: false }
-  };
+  var VAT = 1.2;
+  var KEYS = ["starter", "medium", "pro"];
+  var NAMES = { starter: "Starter", medium: "Medium", pro: "Pro" };
+  var DEFAULT_PRICES = { kitPrice: 10.99, ctuValue: 78.27, starterCost: 41.75, starterRrp: 112.35, mediumCost: 75.70, mediumRrp: 202.20, proCost: 130.00, proRrp: 347.00 };
+  var PRICE_IDS = Object.keys(DEFAULT_PRICES);
   var $ = function (id) { return document.getElementById(id); };
-  var state = { mode: "kits", kits: 10, cash: 30, free: true, bought: "starter" };
+  // sel: the bundle the retailer is looking at; null means follow the best free bundle.
+  var state = { mode: "kits", kits: 10, cash: 50, free: true, bought: "starter", sel: null };
+
+  function num(v) { var n = parseFloat(v); return isFinite(n) && n > 0 ? n : 0; }
+  function r2(n) { return Math.round(n * 100) / 100; }
+  function gbp(n) { return "£" + r2(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
+  function pct(n) { return Math.round(n * 100) + "%"; }
 
   function load() {
     try {
-      var s = JSON.parse(localStorage.getItem("ignite-ba-calc") || "null");
+      var s = JSON.parse(localStorage.getItem("ignite-ba-calc-v2") || "null");
       if (!s) return;
-      ["kitPrice", "bCost", "bRrp", "bName", "store", "ctuCost"].forEach(function (k) { if (s[k] != null) $(k).value = s[k]; });
-      if (s.free != null) state.free = s.free;
-      if (s.bought && PRESETS[s.bought]) state.bought = s.bought;
-      if (s.vat != null) $("vat").checked = s.vat;
-      if (s.mode) state.mode = s.mode;
-      if (s.kits != null) state.kits = s.kits;
-      if (s.cash != null) state.cash = s.cash;
+      PRICE_IDS.concat(["store"]).forEach(function (k) { if (s[k] != null) $(k).value = s[k]; });
+      ["mode", "kits", "cash", "free", "bought", "sel"].forEach(function (k) { if (s[k] !== undefined) state[k] = s[k]; });
+      if (KEYS.indexOf(state.bought) < 0) state.bought = "starter";
+      if (state.sel !== null && KEYS.indexOf(state.sel) < 0) state.sel = null;
     } catch (e) {}
   }
   function save() {
     try {
-      localStorage.setItem("ignite-ba-calc", JSON.stringify({
-        kitPrice: $("kitPrice").value, bCost: $("bCost").value, bRrp: $("bRrp").value,
-        bName: $("bName").value, store: $("store").value, vat: $("vat").checked,
-        ctuCost: $("ctuCost").value, free: state.free, bought: state.bought,
-        mode: state.mode, kits: state.kits, cash: state.cash
-      }));
+      var s = { mode: state.mode, kits: state.kits, cash: state.cash, free: state.free, bought: state.bought, sel: state.sel, store: $("store").value };
+      PRICE_IDS.forEach(function (k) { s[k] = $(k).value; });
+      localStorage.setItem("ignite-ba-calc-v2", JSON.stringify(s));
     } catch (e) {}
   }
 
-  function num(v) { var n = parseFloat(v); return isFinite(n) && n > 0 ? n : 0; }
-  function gbp(n) { return "£" + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
-  function pct(n) { return Math.round(n * 100) + "%"; }
-  function round2(n) { return Math.round(n * 100) / 100; }
-
-  // Core maths: BA takings go towards the agreed bundle.
-  // VAT basis (as Vape Local): cost is ex VAT, RRP and kit takings are inc VAT, so both are divided by 1.2.
-  function calc(sales, p) {
-    var v = p.vat ? 1.2 : 1;
-    var net = round2(sales / v), rrpNet = round2(p.rrp / v);
-    var pays = Math.max(0, round2(p.cost - net));
-    var extra = Math.max(0, round2(net - p.cost));
-    var bundleProfit = round2(rrpNet - pays);
-    var por = rrpNet > 0 ? bundleProfit / rrpNet : 0;
-    // If the store bought its first stock as a bundle, the kits sold cost it the bundle's cost share
-    // (e.g. 45% of ex-VAT retail at 55% margin): take that off what it keeps.
-    var stockCost = p.free ? 0 : round2(net * p.costRatio);
-    return { sales: sales, net: net, rrpNet: rrpNet, pays: pays, extra: extra, bundleProfit: bundleProfit, por: por, stockCost: stockCost, total: round2(bundleProfit + extra - stockCost) };
+  function inputs() {
+    var p = { kit: num($("kitPrice").value), ctu: num($("ctuValue").value), b: {} };
+    KEYS.forEach(function (k) {
+      var cost = num($(k + "Cost").value), rrp = num($(k + "Rrp").value);
+      p.b[k] = { key: k, name: "Ignite " + NAMES[k] + " Bundle", short: NAMES[k], cost: cost, rrp: rrp, rrpEx: r2(rrp / VAT) };
+    });
+    p.kitEx = p.kit / VAT;
+    // When the stock was bought, kits sold cost what that bundle cost per £ of ex-VAT retail.
+    var src = p.b[state.bought];
+    p.costShare = src.rrpEx > 0 ? src.cost / src.rrpEx : 0;
+    p.kitCost = r2(p.kitEx * p.costShare);
+    return p;
   }
 
-  function prices() {
-    return { kit: num($("kitPrice").value), cost: num($("bCost").value), rrp: num($("bRrp").value), name: $("bName").value.trim() || "agreed bundle", vat: $("vat").checked,
-      free: state.free, ctuCost: num($("ctuCost").value), bought: PRESETS[state.bought],
-      costRatio: PRESETS[state.bought].bCost / (PRESETS[state.bought].bRrp / 1.2) };
+  // The one calculation everything uses. All figures ex VAT.
+  // takingsEx goes towards the bundle; whatever is over stays in the till.
+  function deal(takingsEx, b, p) {
+    var pay = Math.max(0, r2(b.cost - takingsEx));
+    var left = Math.max(0, r2(takingsEx - b.cost));
+    var bundleProfit = r2(b.rrpEx - pay);              // made when the bundle stock sells at RRP
+    var stockCost = state.free ? 0 : r2(takingsEx * p.costShare);
+    var total = r2(bundleProfit + left - stockCost);
+    var kitsToFree = p.kitEx > 0 ? Math.ceil(b.cost / p.kitEx - 1e-9) : 0;
+    return {
+      pay: pay, left: left, bundleProfit: bundleProfit, stockCost: stockCost, total: total,
+      por: b.rrpEx > 0 ? bundleProfit / b.rrpEx : 0, isFree: pay === 0 && b.cost > 0, kitsToFree: kitsToFree,
+      baseProfit: r2(b.rrpEx - b.cost), basePor: b.rrpEx > 0 ? (b.rrpEx - b.cost) / b.rrpEx : 0
+    };
   }
 
   function render() {
-    var p = prices();
-    var kitsLine = state.mode === "kits";
-    var sales = kitsLine ? round2(state.kits * p.kit) : round2(state.cash);
-    var r = calc(sales, p);
-    var base = calc(0, p);
-    var V = p.vat ? 1.2 : 1, kitNet = p.kit / V, ex = p.vat ? " ex VAT" : "";
-    var kitsToFree = kitNet > 0 ? Math.ceil(p.cost / kitNet - 1e-9) : 0;
-    document.querySelectorAll(".vatlbl").forEach(function (e) { e.hidden = !p.vat; });
-    document.querySelectorAll("[data-preset]").forEach(function (b) {
-      var q = PRESETS[b.dataset.preset];
-      b.setAttribute("aria-pressed", Math.abs(p.cost - q.bCost) < .005 && Math.abs(p.rrp - q.bRrp) < .005 && p.vat === q.vat);
-    });
+    var p = inputs();
+    var kitsMode = state.mode === "kits";
+    var till = kitsMode ? r2(state.kits * p.kit) : r2(state.cash);
+    var tillEx = r2(till / VAT);
+    var kitsSold = kitsMode ? state.kits : (p.kit > 0 ? Math.floor(till / p.kit + 1e-9) : 0);
+    var D = {}; KEYS.forEach(function (k) { D[k] = deal(tillEx, p.b[k], p); });
+    var freeKeys = KEYS.filter(function (k) { return D[k].isFree; });
+    var best = freeKeys.length ? freeKeys[freeKeys.length - 1] : null;
+    var next = KEYS[freeKeys.length] || null;
+    var selKey = state.sel || best || "starter";
+    var b = p.b[selKey], d = D[selKey];
 
-    var kitMargin = p.free ? 1 : 1 - p.costRatio;
-    var kitCost = round2(kitNet * p.costRatio), kitProfit = round2(r.net - r.stockCost);
-    $("freeFields").hidden = !p.free;
-    $("boughtBox").hidden = p.free;
-    document.querySelectorAll("[data-bought]").forEach(function (b) { b.setAttribute("aria-pressed", b.dataset.bought === state.bought); });
-    $("freeYes").setAttribute("aria-pressed", p.free);
-    $("freeNo").setAttribute("aria-pressed", !p.free);
-    $("ctuHint").textContent = p.free
-      ? "Free stock worth " + gbp(p.ctuCost) + ex + ": every kit sold is 100% margin."
-      : "Your kits came from the " + p.bought.bName + " (" + gbp(p.bought.bCost) + " ex VAT), so each kit sold makes " + pct(kitMargin) + " margin: " + gbp(round2(kitNet - kitCost)) + ex + " a kit.";
-    $("freeTick").hidden = !p.free;
-    $("freeTickText").textContent = "CTU & starter stock supplied FREE (worth " + gbp(p.ctuCost) + ex + "), so every kit sold is 100% profit";
-    $("note").textContent = p.free
-      ? "Your starter kits were supplied free, so every kit sold is 100% margin and goes towards your replacement bundle."
-      : "You bought your first stock as a bundle, so you keep its margin on every kit sold. Today's takings still go towards your replacement bundle.";
+    // 1. free stock
+    $("freeYes").setAttribute("aria-pressed", state.free);
+    $("freeNo").setAttribute("aria-pressed", !state.free);
+    $("boughtBox").hidden = state.free;
+    document.querySelectorAll("[data-bought]").forEach(function (x) { x.setAttribute("aria-pressed", x.dataset.bought === state.bought); });
+    $("freeHint").textContent = state.free
+      ? "Free stock worth " + gbp(p.ctu) + ". Every kit sold is 100% profit."
+      : "Kits from the " + p.b[state.bought].short + " Bundle cost you " + gbp(p.kitCost) + " each, so each kit sold makes " + pct(1 - p.costShare) + " margin (" + gbp(p.kitEx - p.kitCost) + ").";
 
-    $("chipRrp").textContent = gbp(p.rrp);
-    $("chipMar").textContent = gbp(base.bundleProfit) + " (" + pct(base.por) + ")";
-    $("takings").textContent = gbp(sales);
+    // 2. takings
+    $("takings").textContent = gbp(till);
+    $("takingsEx").textContent = gbp(tillEx);
 
-    // progress
-    var frac = p.cost > 0 ? Math.min(1, r.net / p.cost) : 1;
-    $("fill").style.width = (frac * 100) + "%";
-    $("fill").classList.toggle("done", frac >= 1);
-    $("track").setAttribute("aria-valuenow", Math.round(frac * 100));
-    var left = round2(p.cost - r.net);
-    if (left > 0) {
-      var kitsLeft = kitNet > 0 ? Math.ceil(left / kitNet - 1e-9) : 0;
-      $("progressText").innerHTML = "<strong>" + gbp(left) + ex + "</strong> to go. Sell <strong>" + kitsLeft + " more kit" + (kitsLeft === 1 ? "" : "s") + "</strong> and your bundle is free (" + kitsToFree + " kits covers it).";
-    } else {
-      $("progressText").innerHTML = "<strong>Bundle fully paid for.</strong> Everything above " + gbp(p.cost) + ex + " is extra cash for you.";
-    }
+    // Track: scale to the biggest bundle, markers where each becomes free
+    var maxCost = Math.max(p.b.pro.cost, p.b.medium.cost, p.b.starter.cost, 1);
+    var scale = Math.max(maxCost * 1.08, tillEx);
+    $("fill").style.width = Math.min(100, tillEx / scale * 100) + "%";
+    $("rail").setAttribute("aria-valuenow", Math.round(Math.min(1, tillEx / maxCost) * 100));
+    $("marks").innerHTML = KEYS.map(function (k) {
+      return "<span class='mk" + (D[k].isFree ? " hit" : "") + "' style='left:" + (p.b[k].cost / scale * 100) + "%'><b>" + (D[k].isFree ? "✓ " : "") + NAMES[k] + "</b>" + D[k].kitsToFree + " kits</span>";
+    }).join("");
 
-    // hero
-    var st = $("status");
-    if (r.pays === 0 && p.cost > 0) { st.textContent = "Bundle is FREE"; st.className = "status free"; }
-    else if (sales > 0) { st.textContent = "Bundle part paid"; st.className = "status"; }
-    else { st.textContent = "No sales yet today"; st.className = "status"; }
-
-    var unit = kitsLine ? state.kits + " starter kit" + (state.kits === 1 ? "" : "s") + " (" + gbp(sales) + ")" : gbp(sales) + " of stock";
-    var head;
-    if (sales <= 0) head = "Bought on its own, the " + p.name + " costs you " + gbp(p.cost) + ex + " and makes you " + pct(base.por) + " POR.";
-    else if (r.pays > 0) head = "We sold " + unit + " for you today. Put that towards the " + p.name + " and you pay only " + gbp(r.pays) + ex + " for stock that sells for " + gbp(p.rrp) + ".";
-    else head = "We sold " + unit + " for you today. That pays for the whole " + p.name + ", and you still have " + gbp(r.extra) + ex + " extra in your till.";
-    $("headline").textContent = head;
-
-    $("pays").textContent = gbp(r.pays);
-    $("por").textContent = pct(r.por);
-    $("extra").textContent = gbp(r.extra);
-
-    // Which of the three bundles today's sales pay for. Each uses its own price and VAT basis.
-    var tierKeys = ["starter", "medium", "pro"], freeOnes = [], tierHtml = [];
-    tierKeys.forEach(function (key) {
-      var q = PRESETS[key];
-      var tp = { kit: p.kit, cost: q.bCost, rrp: q.bRrp, vat: q.vat, free: p.free, costRatio: p.costRatio };
-      var t = calc(sales, tp), tn = p.kit / (q.vat ? 1.2 : 1);
-      var need = tn > 0 ? Math.ceil(q.bCost / tn - 1e-9) : 0;
-      var more = Math.max(0, need - (kitsLine ? state.kits : Math.floor(sales / (p.kit || 1) + 1e-9)));
-      var isFree = t.pays === 0;
-      if (isFree) freeOnes.push(q.bName);
-      var sel = Math.abs(p.cost - q.bCost) < .005 && Math.abs(p.rrp - q.bRrp) < .005;
-      var fr = Math.min(1, t.net / q.bCost);
-      tierHtml.push("<button type='button' class='tier" + (isFree ? " free" : "") + (sel ? " sel" : "") + "' data-tier='" + key + "'>" +
-        "<span class='nm'>" + q.bName.replace("Ignite ", "").replace(" Bundle", "") + "<small>" + gbp(q.bCost) + "</small></span>" +
-        "<span class='pill'>" + (isFree ? "✓ FREE" : sales > 0 ? "Part paid" : "Full price") + "</span>" +
-        "<span class='big'>" + (isFree ? "£0.00" : "Pay " + gbp(t.pays)) + "</span>" +
-        "<span class='bar'><i style='width:" + (fr * 100) + "%'></i></span>" +
-        "<span class='sub'>" + (isFree
-          ? (t.extra > 0 ? "<b>+" + gbp(t.extra) + "</b> left in your till" : "Exactly covered")
-          : "<b>" + more + " more kit" + (more === 1 ? "" : "s") + "</b> to make it free") + "</span>" +
-        "<span class='sub'>Free at " + need + " kits · RRP " + gbp(q.bRrp) + "</span>" +
-        "<span class='sub'>POR <b>" + pct(t.por) + "</b> · profit <b>" + gbp(t.total) + "</b></span>" +
-        "</button>");
-    });
-    $("tiers").innerHTML = tierHtml.join("");
-    var best = freeOnes[freeOnes.length - 1];
-    var nextKey = tierKeys[freeOnes.length];
+    // Recommendation
     var pick;
-    if (sales <= 0) pick = "Every kit sold brings a free bundle closer. Starter is free at " + Math.ceil(PRESETS.starter.bCost / (p.kit / 1.2) - 1e-9) + " kits.";
-    else if (!best) pick = "Today's sales take " + gbp(Math.min(sales / 1.2, PRESETS.starter.bCost)) + " ex VAT off any bundle. Keep going for a free Starter Bundle.";
-    else if (nextKey) {
-      var nq = PRESETS[nextKey], np = calc(sales, { kit: p.kit, cost: nq.bCost, rrp: nq.bRrp, vat: nq.vat, free: p.free, costRatio: p.costRatio });
-      pick = "Today's sales pay for the " + best + " in full, or you can step up to the " + nq.bName + " for just " + gbp(np.pays) + " ex VAT.";
-    } else pick = "Today's sales pay for the " + best + ", our biggest bundle, in full.";
+    if (tillEx <= 0) pick = "Sell " + D.starter.kitsToFree + " kits and the Starter Bundle is free.";
+    else if (!best) {
+      var more = Math.max(0, D.starter.kitsToFree - kitsSold);
+      pick = "Today takes " + gbp(tillEx) + " off your bundle. " + more + " more kit" + (more === 1 ? "" : "s") + " and the Starter Bundle is free.";
+    } else if (next) pick = "Today pays for the " + p.b[best].short + " Bundle in full. The " + p.b[next].short + " Bundle is yours for just " + gbp(D[next].pay) + " more.";
+    else pick = "Today pays for the Pro Bundle, the biggest one, in full.";
     $("pick").textContent = pick;
 
-    // compare
-    $("basePor").textContent = pct(base.por);
-    // Now = cash in the till today; later = selling the bundle stock at RRP.
-    function lines(x, isBase) {
-      var L = [["Now", null, "when"]];
-      L.push(["You pay for the bundle" + ex, x.pays > 0 ? "−" + gbp(x.pays) : "£0.00 (free)"]);
-      if (!isBase && x.extra > 0) L.push(["Left in your till after that", "+" + gbp(x.extra)]);
-      L.push(["Later", null, "when"]);
-      L.push(["Bundle stock sells at RRP" + (p.vat ? " (" + gbp(p.rrp) + " inc VAT)" : ""), "+" + gbp(x.rrpNet)]);
-      if (!p.free && x.stockCost > 0) L.push(["Cost of kits sold today", "−" + gbp(x.stockCost)]);
-      L.push(["Total profit" + ex, gbp(isBase ? x.bundleProfit : x.total), "tot"]);
+    // Bundle cards
+    $("tiers").innerHTML = KEYS.map(function (k) {
+      var x = D[k], bb = p.b[k];
+      var more = Math.max(0, x.kitsToFree - kitsSold);
+      return "<button type='button' class='tier" + (x.isFree ? " free" : "") + (k === selKey ? " sel" : "") + "' data-tier='" + k + "' aria-pressed='" + (k === selKey) + "'>" +
+        (k === selKey ? "<span class='tag'>Showing</span>" : "") +
+        "<span class='nm'>" + NAMES[k] + "<small>" + gbp(bb.cost) + "</small></span>" +
+        "<span class='big'>" + (x.isFree ? "FREE" : "Pay " + gbp(x.pay)) + "</span>" +
+        "<span class='sub'>" + (x.isFree ? (x.left > 0 ? "<b>+" + gbp(x.left) + "</b> left in till" : "Exactly covered") : "<b>" + more + " more kit" + (more === 1 ? "" : "s") + "</b> to make it free") + "</span>" +
+        "<span class='sub'>Free at " + x.kitsToFree + " kits</span>" +
+        "<span class='sub'>Profit <b>" + gbp(x.total) + "</b> · POR <b>" + pct(x.por) + "</b></span>" +
+        "</button>";
+    }).join("");
+    $("autoText").textContent = state.sel ? "You picked the " + b.short + " Bundle." : "Showing the best free bundle. Tap another to compare.";
+    $("autoBtn").hidden = !state.sel;
+
+    // Hero for the selected bundle
+    $("heroTitle").textContent = b.name + " · your price " + gbp(b.cost) + " · RRP " + gbp(b.rrp) + " inc VAT";
+    $("freeTick").hidden = !state.free;
+    $("freeTickText").textContent = "CTU & starter stock supplied FREE (worth " + gbp(p.ctu) + "), so every kit sold is 100% profit";
+    var sold = kitsMode ? state.kits + " starter kit" + (state.kits === 1 ? "" : "s") : gbp(till) + " of stock";
+    var head;
+    if (till <= 0) head = "Bought on its own, the " + b.short + " Bundle costs you " + gbp(b.cost) + " and makes " + pct(d.basePor) + " POR.";
+    else if (d.isFree) head = "We sold " + sold + " for you today. That pays for the whole " + b.short + " Bundle" + (d.left > 0 ? ", with " + gbp(d.left) + " left in your till." : ".");
+    else head = "We sold " + sold + " for you today. That takes " + gbp(tillEx) + " off the " + b.short + " Bundle, so you pay just " + gbp(d.pay) + ".";
+    $("headline").textContent = head;
+    $("sPay").textContent = gbp(d.pay);
+    $("sPayS").textContent = d.isFree ? "the bundle is free" : "instead of " + gbp(b.cost);
+    $("sLeft").textContent = gbp(d.left);
+    $("sLater").textContent = gbp(b.rrpEx);
+    $("sLaterS").textContent = gbp(b.rrp) + " RRP inc VAT";
+    $("sPor").textContent = pct(d.por);
+    $("sPorS").textContent = "was " + pct(d.basePor) + " on its own";
+
+    // Compare: now / later
+    function lines(isBase) {
+      var L = [["Now"]];
+      if (isBase) L.push(["You pay for the bundle", "−" + gbp(b.cost)]);
+      else {
+        L.push(["You pay for the bundle", d.pay > 0 ? "−" + gbp(d.pay) : "£0.00"]);
+        if (d.left > 0) L.push(["Left in your till", "+" + gbp(d.left)]);
+      }
+      L.push(["Later"]);
+      L.push(["Bundle sells at RRP", "+" + gbp(b.rrpEx)]);
+      if (!isBase && d.stockCost > 0) L.push(["Cost of kits sold today", "−" + gbp(d.stockCost)]);
+      L.push(["Total profit", gbp(isBase ? d.baseProfit : d.total), "tot"]);
       return L.map(function (l) {
-        return l[2] === "when" ? "<div class='when'>" + l[0] + "</div>" : "<div class='" + (l[2] || "") + "'><dt>" + l[0] + "</dt><dd>" + l[1] + "</dd></div>";
+        return l.length === 1 ? "<div class='when'>" + l[0] + "</div>" : "<div class='" + (l[2] || "") + "'><dt>" + l[0] + "</dt><dd>" + l[1] + "</dd></div>";
       }).join("");
     }
-    $("baseMeta").innerHTML = lines(base, true);
-    $("todayPor").textContent = pct(r.por) + (r.extra > 0 ? " +" + gbp(r.extra) : "");
-    $("todayMeta").innerHTML = lines(r, false);
-    $("future").textContent = gbp(p.rrp);
-    var lift = round2(r.total - base.bundleProfit);
-    $("lift").textContent = lift > 0 ? "+" + gbp(lift) + " more in your pocket" : "";
+    $("basePor").textContent = pct(d.basePor) + " POR";
+    $("baseLines").innerHTML = lines(true);
+    $("todayPor").textContent = pct(d.por) + " POR";
+    $("todayLines").innerHTML = lines(false);
+    var lift = r2(d.total - d.baseProfit);
+    $("lift").textContent = lift > 0 ? "+" + gbp(lift) + " more profit than buying it on its own" : "";
 
-    // maths table
+    // Maths
     var rows = [];
-    if (kitsLine) rows.push(["Starter kits sold today", state.kits + " × " + gbp(p.kit) + " = " + gbp(sales)]);
-    else rows.push(["Stock sold today", gbp(sales)]);
-    if (p.free) rows.push(["✓ CTU & stock supplied free (worth " + gbp(p.ctuCost) + ex + "), so margin on kits is", "100%", "tick"]);
-    else {
-      rows.push(["Kits came from your " + p.bought.bName + ", so margin on kits is", pct(kitMargin)]);
-    }
-    if (p.vat) rows.push(["Takings ex VAT: " + gbp(sales) + " ÷ 1.2", gbp(r.net)]);
-    rows.push(["Cost of " + p.name + ex, gbp(p.cost)]);
-    rows.push(["<span class='op'>minus</span> today's takings put towards it", "−" + gbp(Math.min(r.net, p.cost))]);
-    rows.push(["<b>You pay for the bundle" + ex + "</b>", gbp(r.pays)]);
-    if (p.vat) rows.push(["Future sales of the bundle stock: " + gbp(p.rrp) + " RRP inc VAT ÷ 1.2", gbp(r.rrpNet)]);
-    else rows.push(["Future sales of the bundle stock at RRP", gbp(p.rrp)]);
-    rows.push(["Profit on bundle: " + gbp(r.rrpNet) + " − " + gbp(r.pays), gbp(r.bundleProfit)]);
-    rows.push(["POR: " + gbp(r.bundleProfit) + " ÷ " + gbp(r.rrpNet), pct(r.por)]);
-    if (r.extra > 0) rows.push(["Extra cash left over: " + gbp(r.net) + " − " + gbp(p.cost), "+" + gbp(r.extra), "plus"]);
-    if (!p.free && r.stockCost > 0) rows.push(["<span class='op'>minus</span> cost of kits sold (" + gbp(kitCost) + " each, from your " + p.bought.bName + ")", "−" + gbp(r.stockCost), "minus"]);
-    rows.push(["<b>Total in your pocket" + ex + "</b>", gbp(r.total), "total"]);
-    if (!p.free && r.net > 0) {
-      rows.push(["That's the usual bundle margin", gbp(base.bundleProfit)]);
-      rows.push(["<span class='op'>plus</span> margin on today's kits on top: " + gbp(r.net) + " × " + pct(kitMargin), "+" + gbp(kitProfit), "plus"]);
-    }
+    rows.push(["Today's sales", "", "sec"]);
+    if (kitsMode) rows.push([state.kits + " kits × " + gbp(p.kit), gbp(till)]);
+    else rows.push(["Taken in the till (inc VAT)", gbp(till)]);
+    rows.push(["Less VAT (÷ 1.2)", gbp(tillEx), "key"]);
+    if (state.free) rows.push(["✓ Stock was free, so all of it is profit", "100%", "tick"]);
+    else rows.push(["Kits came from your " + p.b[state.bought].short + " Bundle , costing " + gbp(p.kitCost) + " each", pct(1 - p.costShare) + " margin"]);
+    rows.push(["Your " + b.short + " Bundle", "", "sec"]);
+    rows.push(["Your price", gbp(b.cost)]);
+    rows.push(["Paid for by today's sales", "−" + gbp(Math.min(tillEx, b.cost))]);
+    rows.push(["You pay now", gbp(d.pay), "key"]);
+    if (d.left > 0) rows.push(["Left in your till (" + gbp(tillEx) + " − " + gbp(b.cost) + ")", "+" + gbp(d.left), "good"]);
+    rows.push(["Later", "", "sec"]);
+    rows.push(["Bundle sells at RRP: " + gbp(b.rrp) + " ÷ 1.2", gbp(b.rrpEx)]);
+    rows.push(["Profit on the bundle: " + gbp(b.rrpEx) + " − " + gbp(d.pay), gbp(d.bundleProfit)]);
+    rows.push(["POR: " + gbp(d.bundleProfit) + " ÷ " + gbp(b.rrpEx), pct(d.por), "key"]);
+    if (d.left > 0) rows.push(["<span style='color:var(--muted)'>plus</span> left in your till", "+" + gbp(d.left), "good"]);
+    if (d.stockCost > 0) rows.push(["<span style='color:var(--muted)'>minus</span> cost of kits sold: " + gbp(tillEx) + " × " + pct(p.costShare), "−" + gbp(d.stockCost), "minus"]);
+    rows.push(["Total profit", gbp(d.total), "total"]);
     $("maths").innerHTML = rows.map(function (rw) {
       return "<tr class='" + (rw[2] || "") + "'><td>" + rw[0] + "</td><td>" + rw[1] + "</td></tr>";
     }).join("");
 
-    // ladder
-    var maxK = Math.max(12, kitsToFree + 4, kitsLine ? state.kits : 0);
+    // Ladder: one row per kit count, what each bundle would cost
+    KEYS.forEach(function (k) { $("h" + NAMES[k]).className = k === selKey ? "sel" : ""; });
+    var maxK = Math.max(D.pro.kitsToFree + 2, kitsMode ? state.kits : kitsSold);
     var steps = [];
-    for (var k = 0; k <= maxK; k++) {
-      if (maxK > 16 && k > 12 && k % 5 !== 0 && k !== (kitsLine ? state.kits : -1) && k !== maxK) continue;
-      steps.push(k);
+    for (var n = 0; n <= maxK; n++) {
+      if (maxK > 20 && n > 20 && n % 5 !== 0 && n !== state.kits && n !== maxK) continue;
+      steps.push(n);
     }
-    $("ladder").innerHTML = steps.map(function (k) {
-      var x = calc(round2(k * p.kit), p);
-      var cur = kitsLine && k === state.kits ? " class='cur'" : "";
-      return "<tr data-k='" + k + "'" + cur + "><td>" + k + (k === kitsToFree ? " ★" : "") + "</td><td>" + gbp(x.sales) + "</td><td>" + gbp(x.pays) + "</td><td>" + pct(x.por) + "</td><td>" + (x.extra > 0 ? "+" + gbp(x.extra) : "–") + "</td><td>" + gbp(x.total) + "</td></tr>";
+    $("ladder").innerHTML = steps.map(function (n) {
+      var ex = r2(r2(n * p.kit) / VAT);
+      var cells = KEYS.map(function (k) {
+        var x = deal(ex, p.b[k], p);
+        if (!x.isFree) return "<td>" + gbp(x.pay) + "</td>";
+        return "<td class='f'>" + (n === x.kitsToFree ? "★ " : "") + "FREE" + (x.left > 0 ? " <small>+" + gbp(x.left) + "</small>" : "") + "</td>";
+      }).join("");
+      return "<tr data-k='" + n + "'" + (kitsMode && n === state.kits ? " class='cur'" : "") + "><td>" + n + "</td><td>" + gbp(n * p.kit) + "</td>" + cells + "</tr>";
     }).join("");
 
-    // summary
+    // Summary
     var store = $("store").value.trim();
-    var d = new Date().toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
-    var lines = [
-      "Ignite BA Day" + (store ? " – " + store : "") + " – " + d,
-      (kitsLine ? "Starter kits sold: " + state.kits + " × " + gbp(p.kit) + " = " + gbp(sales) : "Stock sold: " + gbp(sales)) + (p.free ? " (✓ CTU & stock supplied FREE, worth " + gbp(p.ctuCost) + ex + ", so 100% margin)" : " (kits from your " + p.bought.bName + ", " + pct(kitMargin) + " margin = " + gbp(kitProfit) + ex + " profit on today's sales)"),
+    var date = new Date().toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+    var out = [
+      "Ignite BA Day" + (store ? " – " + store : "") + " – " + date,
+      (kitsMode ? "Starter kits sold: " + state.kits + " × " + gbp(p.kit) + " = " + gbp(till) : "Taken: " + gbp(till)) + " (" + gbp(tillEx) + " ex VAT)",
+      state.free ? "✓ CTU & starter stock supplied FREE (worth " + gbp(p.ctu) + "), so every kit sold is 100% profit"
+                 : "Kits from your " + p.b[state.bought].short + " Bundle: " + pct(1 - p.costShare) + " margin",
       "",
-      "Bundles: " + ["starter", "medium", "pro"].map(function (k) {
-        var q = PRESETS[k], t = calc(sales, { kit: p.kit, cost: q.bCost, rrp: q.bRrp, vat: q.vat, free: p.free, costRatio: p.costRatio });
-        return q.bName.replace("Ignite ", "") + " " + (t.pays === 0 ? "FREE" : "pay " + gbp(t.pays));
-      }).join(" | ") + " (ex VAT)",
+      "Bundles today: " + KEYS.map(function (k) { return NAMES[k] + " " + (D[k].isFree ? "FREE" : "pay " + gbp(D[k].pay)); }).join(" | "),
       "",
-      p.name + ": costs " + gbp(p.cost) + ex + ", sells for " + gbp(p.rrp) + (p.vat ? " inc VAT" : ""),
-      "Bought on its own: pay " + gbp(p.cost) + " → POR " + pct(base.por) + " (" + gbp(base.bundleProfit) + " profit)",
-      "With today's sales: pay " + gbp(r.pays) + " → POR " + pct(r.por) + (r.extra > 0 ? " plus " + gbp(r.extra) + " extra in the till" : ""),
-      "  Now: " + (r.extra > 0 ? gbp(r.extra) + " left in your till" : "pay " + gbp(r.pays)) + " | Later: bundle stock sells for " + gbp(p.rrp) + " at RRP",
-      (!p.free && r.stockCost > 0 ? "Less cost of kits sold: " + gbp(r.stockCost) : ""),
-      "Total in your pocket: " + gbp(r.total) + ex + (lift > 0 ? " (" + gbp(lift) + " more than buying the bundle normally)" : "")
+      "Your " + b.name + " (your price " + gbp(b.cost) + ", RRP " + gbp(b.rrp) + " inc VAT)",
+      "  Now: you pay " + gbp(d.pay) + (d.left > 0 ? ", " + gbp(d.left) + " left in your till" : ""),
+      "  Later: the bundle sells for " + gbp(b.rrpEx) + " at RRP",
+      (d.stockCost > 0 ? "  Less cost of kits sold: " + gbp(d.stockCost) + "\n" : "") +
+      "  Total profit: " + gbp(d.total) + " | POR " + pct(d.por),
+      "  On its own it would be " + gbp(d.baseProfit) + " | POR " + pct(d.basePor) + (lift > 0 ? " (today adds " + gbp(lift) + ")" : ""),
+      "",
+      "All figures ex VAT unless shown."
     ];
-    $("summary").value = lines.join("\n");
+    $("summary").value = out.join("\n");
 
-    // inputs reflect state
     if (document.activeElement !== $("kits")) $("kits").value = state.kits;
     if (document.activeElement !== $("cash")) $("cash").value = state.cash;
     save();
@@ -633,46 +591,41 @@ textarea#summary { width: 100%; min-height: 150px; font: 14px/1.5 ui-monospace, 
   }
   function setKits(n) { state.kits = Math.max(0, Math.round(n) || 0); render(); }
 
+  $("freeYes").addEventListener("click", function () { state.free = true; render(); });
+  $("freeNo").addEventListener("click", function () { state.free = false; render(); });
+  document.querySelectorAll("[data-bought]").forEach(function (x) { x.addEventListener("click", function () { state.bought = x.dataset.bought; render(); }); });
   $("modeKits").addEventListener("click", function () { setMode("kits"); });
   $("modeCash").addEventListener("click", function () { setMode("cash"); });
   $("kitPlus").addEventListener("click", function () { setKits(state.kits + 1); });
   $("kitMinus").addEventListener("click", function () { setKits(state.kits - 1); });
-  $("kits").addEventListener("input", function () { state.kits = Math.max(0, Math.floor(num(this.value))); render(); });
+  $("kits").addEventListener("input", function () { state.kits = Math.floor(num(this.value)); render(); });
   $("kits").addEventListener("blur", function () { this.value = state.kits; });
-  $("cash").addEventListener("input", function () { state.cash = round2(num(this.value)); render(); });
+  $("cash").addEventListener("input", function () { state.cash = r2(num(this.value)); render(); });
   $("cash").addEventListener("blur", function () { this.value = state.cash; });
-  document.querySelectorAll("[data-add]").forEach(function (b) { b.addEventListener("click", function () { setKits(state.kits + +b.dataset.add); }); });
-  document.querySelectorAll("[data-set]").forEach(function (b) { b.addEventListener("click", function () { setKits(+b.dataset.set); }); });
-  document.querySelectorAll("[data-cash]").forEach(function (b) { b.addEventListener("click", function () { state.cash = +b.dataset.cash; render(); }); });
-  ["kitPrice", "bCost", "bRrp", "bName", "store"].forEach(function (id) { $(id).addEventListener("input", render); });
-  $("vat").addEventListener("change", render);
-  $("ctuCost").addEventListener("input", render);
-  document.querySelectorAll("[data-bought]").forEach(function (b) { b.addEventListener("click", function () { state.bought = b.dataset.bought; render(); }); });
-  $("freeYes").addEventListener("click", function () { state.free = true; render(); });
-  $("freeNo").addEventListener("click", function () { state.free = false; render(); });
-  document.querySelectorAll("[data-preset]").forEach(function (b) {
-    b.addEventListener("click", function () {
-      var q = PRESETS[b.dataset.preset];
-      $("bName").value = q.bName; $("bCost").value = q.bCost.toFixed(2); $("bRrp").value = q.bRrp.toFixed(2); $("vat").checked = q.vat;
-      render();
-    });
+  document.querySelectorAll("[data-add]").forEach(function (x) { x.addEventListener("click", function () { setKits(state.kits + +x.dataset.add); }); });
+  document.querySelectorAll("[data-set]").forEach(function (x) { x.addEventListener("click", function () { setKits(+x.dataset.set); }); });
+  PRICE_IDS.concat(["store"]).forEach(function (id) { $(id).addEventListener("input", render); });
+  $("resetPrices").addEventListener("click", function () {
+    PRICE_IDS.forEach(function (k) { $(k).value = DEFAULT_PRICES[k].toFixed(2); });
+    render();
   });
   $("tiers").addEventListener("click", function (e) {
-    var b = e.target.closest("[data-tier]");
-    if (b) document.querySelector("[data-preset='" + b.dataset.tier + "']").click();
+    var t = e.target.closest("[data-tier]");
+    if (t) { state.sel = t.dataset.tier; render(); }
   });
+  $("autoBtn").addEventListener("click", function () { state.sel = null; render(); });
   $("ladder").addEventListener("click", function (e) {
     var tr = e.target.closest("tr[data-k]");
     if (!tr) return;
-    if (state.mode !== "kits") setMode("kits");
+    if (state.mode !== "kits") { state.mode = "kits"; setMode("kits"); }
     setKits(+tr.dataset.k);
   });
   $("copy").addEventListener("click", function () {
     var t = $("summary").value;
     function done(msg) { $("toast").textContent = msg; setTimeout(function () { $("toast").textContent = ""; }, 2500); }
     try {
-      navigator.clipboard.writeText(t).then(function () { done("Copied"); }, function () { $("summary").select(); done("Text selected, copy it from the box"); });
-    } catch (e) { $("summary").select(); done("Text selected, copy it from the box"); }
+      navigator.clipboard.writeText(t).then(function () { done("Copied"); }, function () { $("summary").select(); done("Text selected. Copy it from the box."); });
+    } catch (e) { $("summary").select(); done("Text selected. Copy it from the box."); }
   });
 
   load();
