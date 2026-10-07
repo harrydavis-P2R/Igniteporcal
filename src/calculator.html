@@ -69,6 +69,18 @@ header p { margin: 0; opacity: .8; font-size: 14px; }
 .presets button[aria-pressed="true"] span { color: var(--yellow); }
 .fields label.check { display: flex; align-items: center; gap: 8px; color: var(--fg); font-weight: 500; font-size: 14px; }
 .fields label.check input { width: 20px; height: 20px; }
+.ctu { display: grid; gap: 10px; border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
+.ctu .q { font-weight: 700; font-size: 15px; }
+.yn { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.yn button { border: 1px solid var(--line); background: var(--surface); color: var(--fg); font: 600 15px var(--body); padding: 12px 8px; border-radius: 10px; cursor: pointer; }
+.yn button[aria-pressed="true"].yes { background: var(--good); border-color: var(--good); color: #fff; }
+.yn button[aria-pressed="true"].no { background: var(--navy); border-color: var(--navy); color: var(--navy-ink); }
+.ctu .fields { padding-bottom: 0; }
+.ctu .hint { margin: 0; font-size: 13px; color: var(--muted); }
+.freetick { display: flex; align-items: center; gap: 10px; background: rgba(46, 204, 113, .16); border: 1px solid #2ecc71; border-radius: 10px; padding: 10px 12px; font-weight: 600; }
+.freetick .tk { flex: none; width: 28px; height: 28px; border-radius: 50%; background: #2ecc71; color: #08301a; display: grid; place-items: center; font-weight: 800; font-size: 17px; }
+.maths tr.tick td { color: var(--good); font-weight: 700; }
+.maths tr.minus td:last-child { color: var(--warn); }
 .stepper { display: grid; grid-template-columns: 64px minmax(0, 1fr) 64px; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); height: 72px; }
 .stepper button { border: 0; background: var(--blue); color: #fff; font-size: 32px; font-weight: 500; cursor: pointer; }
 .stepper button.minus { opacity: .55; }
@@ -155,7 +167,7 @@ textarea#summary { width: 100%; min-height: 150px; font: 14px/1.5 ui-monospace, 
       <span class="mark">IGNITE</span>
       <div>
         <h1>BA Day Calculator</h1>
-        <p>What today's starter kit sales mean for the store</p>
+        <p>What today's starter kit sales put in your pocket</p>
       </div>
     </div>
     <div class="chips num" aria-label="Agreed bundle">
@@ -176,6 +188,23 @@ textarea#summary { width: 100%; min-height: 150px; font: 14px/1.5 ui-monospace, 
         <button type="button" data-preset="medium"><b>Medium</b><span>£75.70 · RRP £202.20</span></button>
         <button type="button" data-preset="pro"><b>Pro</b><span>£130.00 · RRP £347.00</span></button>
         <button type="button" data-preset="example"><b>Example</b><span>£57.90 · RRP £107.50</span></button>
+      </div>
+
+      <div class="ctu">
+        <div class="q">Did you get the CTU / starter stock free?</div>
+        <div class="yn" role="group" aria-label="Was the CTU stock free">
+          <button type="button" class="yes" id="freeYes" aria-pressed="true">✓ Yes, free</button>
+          <button type="button" class="no" id="freeNo" aria-pressed="false">No, we paid</button>
+        </div>
+        <div class="fields">
+          <label>CTU value / cost (£<span class="vatlbl"> ex VAT</span>)
+            <input id="ctuCost" type="number" inputmode="decimal" step="0.01" min="0" value="78.27">
+          </label>
+          <label>Starter kits in the CTU
+            <input id="ctuKits" type="number" inputmode="numeric" step="1" min="1" value="10">
+          </label>
+        </div>
+        <p class="hint" id="ctuHint"></p>
       </div>
 
       <div class="mode" role="group" aria-label="How to enter sales">
@@ -212,7 +241,7 @@ textarea#summary { width: 100%; min-height: 150px; font: 14px/1.5 ui-monospace, 
       </div>
 
       <div class="takings">
-        <span>Cash in the till from BA sales</span>
+        <span>Cash in your till from today's sales</span>
         <b class="num" id="takings">£109.90</b>
       </div>
 
@@ -243,34 +272,35 @@ textarea#summary { width: 100%; min-height: 150px; font: 14px/1.5 ui-monospace, 
           </label>
         </div>
       </details>
-      <p class="note">The starter kits were given to the store free, so every kit the BA sells is 100% margin and goes towards the cost of the agreed replacement bundle.</p>
+      <p class="note" id="note"></p>
     </section>
 
     <!-- RESULT -->
     <section class="panel" aria-labelledby="outTitle" aria-live="polite">
       <div>
         <div class="eyebrow">Step 2</div>
-        <h2 id="outTitle">What it means for the store</h2>
+        <h2 id="outTitle">What it means for your store</h2>
       </div>
 
       <div class="hero">
         <span class="status" id="status">Bundle part paid</span>
+        <div class="freetick" id="freeTick"><span class="tk">✓</span><span id="freeTickText"></span></div>
         <p class="headline" id="headline"></p>
         <div class="hero-row">
-          <div class="stat"><span class="k">Store pays for bundle<span class="vatlbl"> (ex VAT)</span></span><span class="v num" id="pays">£0.00</span></div>
-          <div class="stat"><span class="k">Profit on return (POR)</span><span class="v y num" id="por">100%</span></div>
-          <div class="stat"><span class="k">Extra cash in the till<span class="vatlbl"> (ex VAT)</span></span><span class="v num" id="extra">£0.00</span></div>
+          <div class="stat"><span class="k">You pay for the bundle<span class="vatlbl"> (ex VAT)</span></span><span class="v num" id="pays">£0.00</span></div>
+          <div class="stat"><span class="k">Your profit on return (POR)</span><span class="v y num" id="por">100%</span></div>
+          <div class="stat"><span class="k">Extra cash in your till<span class="vatlbl"> (ex VAT)</span></span><span class="v num" id="extra">£0.00</span></div>
         </div>
       </div>
 
       <div class="compare">
         <div class="cmp">
-          <span class="eyebrow">Buying the bundle normally</span>
+          <span class="eyebrow">Buying the bundle on its own</span>
           <span class="por num" id="basePor">46%</span>
           <span class="meta num" id="baseMeta">Pays £57.90, sells for £107.50</span>
         </div>
         <div class="cmp today">
-          <span class="eyebrow">With today's BA day</span>
+          <span class="eyebrow">With today's sales</span>
           <span class="por num" id="todayPor">100%</span>
           <span class="meta num" id="todayMeta"></span>
           <span class="lift num" id="lift"></span>
@@ -286,14 +316,14 @@ textarea#summary { width: 100%; min-height: 150px; font: 14px/1.5 ui-monospace, 
         <div class="eyebrow" style="margin-bottom:4px">Kits sold ladder (tap a row)</div>
         <div class="ladder-wrap">
           <table class="ladder num">
-            <thead><tr><th>Kits sold</th><th>Taken</th><th>Store pays</th><th>POR</th><th>Extra cash</th></tr></thead>
+            <thead><tr><th>Kits sold</th><th>Taken</th><th>Store pays</th><th>POR</th><th>Extra cash</th><th>In pocket</th></tr></thead>
             <tbody id="ladder"></tbody>
           </table>
         </div>
       </div>
 
       <div style="display:grid;gap:10px">
-        <div class="eyebrow">Summary for the store owner</div>
+        <div class="eyebrow">Summary to send the store owner</div>
         <textarea id="summary" readonly aria-label="Summary text"></textarea>
         <div class="share">
           <button type="button" class="btn" id="copy">Copy summary</button>
@@ -313,13 +343,14 @@ textarea#summary { width: 100%; min-height: 150px; font: 14px/1.5 ui-monospace, 
     example: { bName: "Example bundle", bCost: 57.90, bRrp: 107.50, vat: false }
   };
   var $ = function (id) { return document.getElementById(id); };
-  var state = { mode: "kits", kits: 10, cash: 30 };
+  var state = { mode: "kits", kits: 10, cash: 30, free: true };
 
   function load() {
     try {
       var s = JSON.parse(localStorage.getItem("ignite-ba-calc") || "null");
       if (!s) return;
-      ["kitPrice", "bCost", "bRrp", "bName", "store"].forEach(function (k) { if (s[k] != null) $(k).value = s[k]; });
+      ["kitPrice", "bCost", "bRrp", "bName", "store", "ctuCost", "ctuKits"].forEach(function (k) { if (s[k] != null) $(k).value = s[k]; });
+      if (s.free != null) state.free = s.free;
       if (s.vat != null) $("vat").checked = s.vat;
       if (s.mode) state.mode = s.mode;
       if (s.kits != null) state.kits = s.kits;
@@ -331,6 +362,7 @@ textarea#summary { width: 100%; min-height: 150px; font: 14px/1.5 ui-monospace, 
       localStorage.setItem("ignite-ba-calc", JSON.stringify({
         kitPrice: $("kitPrice").value, bCost: $("bCost").value, bRrp: $("bRrp").value,
         bName: $("bName").value, store: $("store").value, vat: $("vat").checked,
+        ctuCost: $("ctuCost").value, ctuKits: $("ctuKits").value, free: state.free,
         mode: state.mode, kits: state.kits, cash: state.cash
       }));
     } catch (e) {}
@@ -350,11 +382,16 @@ textarea#summary { width: 100%; min-height: 150px; font: 14px/1.5 ui-monospace, 
     var extra = Math.max(0, round2(net - p.cost));
     var bundleProfit = round2(rrpNet - pays);
     var por = rrpNet > 0 ? bundleProfit / rrpNet : 0;
-    return { sales: sales, net: net, rrpNet: rrpNet, pays: pays, extra: extra, bundleProfit: bundleProfit, por: por, total: round2(bundleProfit + extra) };
+    // If the store paid for the CTU, the kits sold cost it something: take that off what it keeps.
+    var kitNet = p.kit / v;
+    var stockCost = !p.free && kitNet > 0 ? round2(net * p.kitCost / kitNet) : 0;
+    return { sales: sales, net: net, rrpNet: rrpNet, pays: pays, extra: extra, bundleProfit: bundleProfit, por: por, stockCost: stockCost, total: round2(bundleProfit + extra - stockCost) };
   }
 
   function prices() {
-    return { kit: num($("kitPrice").value), cost: num($("bCost").value), rrp: num($("bRrp").value), name: $("bName").value.trim() || "agreed bundle", vat: $("vat").checked };
+    return { kit: num($("kitPrice").value), cost: num($("bCost").value), rrp: num($("bRrp").value), name: $("bName").value.trim() || "agreed bundle", vat: $("vat").checked,
+      free: state.free, ctuCost: num($("ctuCost").value), ctuKits: Math.max(1, Math.round(num($("ctuKits").value)) || 1),
+      kitCost: num($("ctuCost").value) / (Math.max(1, Math.round(num($("ctuKits").value)) || 1)) };
   }
 
   function render() {
@@ -371,6 +408,18 @@ textarea#summary { width: 100%; min-height: 150px; font: 14px/1.5 ui-monospace, 
       b.setAttribute("aria-pressed", Math.abs(p.cost - q.bCost) < .005 && Math.abs(p.rrp - q.bRrp) < .005 && p.vat === q.vat);
     });
 
+    var kitMargin = p.free ? 1 : (kitNet > 0 ? (kitNet - p.kitCost) / kitNet : 0);
+    $("freeYes").setAttribute("aria-pressed", p.free);
+    $("freeNo").setAttribute("aria-pressed", !p.free);
+    $("ctuHint").textContent = p.free
+      ? "Free stock worth " + gbp(p.ctuCost) + ex + ": every kit sold is 100% margin."
+      : "Kits cost you " + gbp(p.kitCost) + ex + " each (" + gbp(p.ctuCost) + " ÷ " + p.ctuKits + "), so each kit sold makes " + pct(kitMargin) + " margin.";
+    $("freeTick").hidden = !p.free;
+    $("freeTickText").textContent = "CTU & starter stock supplied FREE (worth " + gbp(p.ctuCost) + ex + "), so every kit sold is 100% profit";
+    $("note").textContent = p.free
+      ? "Your starter kits were supplied free, so every kit sold is 100% margin and goes towards your replacement bundle."
+      : "You paid for the CTU, so the cost of the kits sold is taken off what you keep. Today's takings still go towards your replacement bundle.";
+
     $("chipRrp").textContent = gbp(p.rrp);
     $("chipMar").textContent = gbp(base.bundleProfit) + " (" + pct(base.por) + ")";
     $("takings").textContent = gbp(sales);
@@ -383,22 +432,22 @@ textarea#summary { width: 100%; min-height: 150px; font: 14px/1.5 ui-monospace, 
     var left = round2(p.cost - r.net);
     if (left > 0) {
       var kitsLeft = kitNet > 0 ? Math.ceil(left / kitNet - 1e-9) : 0;
-      $("progressText").innerHTML = "<strong>" + gbp(left) + ex + "</strong> to go. Sell <strong>" + kitsLeft + " more kit" + (kitsLeft === 1 ? "" : "s") + "</strong> and the bundle is free (" + kitsToFree + " kits covers it).";
+      $("progressText").innerHTML = "<strong>" + gbp(left) + ex + "</strong> to go. Sell <strong>" + kitsLeft + " more kit" + (kitsLeft === 1 ? "" : "s") + "</strong> and your bundle is free (" + kitsToFree + " kits covers it).";
     } else {
-      $("progressText").innerHTML = "<strong>Bundle fully paid for.</strong> Everything above " + gbp(p.cost) + ex + " is extra cash for the store.";
+      $("progressText").innerHTML = "<strong>Bundle fully paid for.</strong> Everything above " + gbp(p.cost) + ex + " is extra cash for you.";
     }
 
     // hero
     var st = $("status");
     if (r.pays === 0 && p.cost > 0) { st.textContent = "Bundle is FREE"; st.className = "status free"; }
     else if (sales > 0) { st.textContent = "Bundle part paid"; st.className = "status"; }
-    else { st.textContent = "No BA sales yet"; st.className = "status"; }
+    else { st.textContent = "No sales yet today"; st.className = "status"; }
 
     var unit = kitsLine ? state.kits + " starter kit" + (state.kits === 1 ? "" : "s") + " (" + gbp(sales) + ")" : gbp(sales) + " of stock";
     var head;
-    if (sales <= 0) head = "Without BA sales the store pays " + gbp(p.cost) + ex + " for the bundle and makes " + pct(base.por) + " POR.";
-    else if (r.pays > 0) head = "The BA sold " + unit + ". The store now pays only " + gbp(r.pays) + ex + " for a bundle that sells for " + gbp(p.rrp) + ".";
-    else head = "The BA sold " + unit + ". The bundle costs the store nothing, and there's " + gbp(r.extra) + ex + " extra in the till.";
+    if (sales <= 0) head = "Bought on its own, the " + p.name + " costs you " + gbp(p.cost) + ex + " and makes you " + pct(base.por) + " POR.";
+    else if (r.pays > 0) head = "We sold " + unit + " for you today. Put that towards the " + p.name + " and you pay only " + gbp(r.pays) + ex + " for stock that sells for " + gbp(p.rrp) + ".";
+    else head = "We sold " + unit + " for you today. That pays for the whole " + p.name + ", and you still have " + gbp(r.extra) + ex + " extra in your till.";
     $("headline").textContent = head;
 
     $("pays").textContent = gbp(r.pays);
@@ -411,23 +460,25 @@ textarea#summary { width: 100%; min-height: 150px; font: 14px/1.5 ui-monospace, 
     $("todayPor").textContent = pct(r.por) + (r.extra > 0 ? " +" + gbp(r.extra) : "");
     $("todayMeta").textContent = "Pays " + gbp(r.pays) + ex + ", sells for " + gbp(p.rrp) + (p.vat ? " inc VAT" : "") + ". Profit " + gbp(r.total) + ex + ".";
     var lift = round2(r.total - base.bundleProfit);
-    $("lift").textContent = lift > 0 ? "+" + gbp(lift) + " more in the store's pocket" : "";
+    $("lift").textContent = lift > 0 ? "+" + gbp(lift) + " more in your pocket" : "";
 
     // maths table
     var rows = [];
-    if (kitsLine) rows.push(["Starter kits sold by BA", state.kits + " × " + gbp(p.kit) + " = " + gbp(sales)]);
-    else rows.push(["Stock sold by BA", gbp(sales)]);
-    rows.push(["Kits were supplied free, so margin on them is", "100%"]);
+    if (kitsLine) rows.push(["Starter kits sold today", state.kits + " × " + gbp(p.kit) + " = " + gbp(sales)]);
+    else rows.push(["Stock sold today", gbp(sales)]);
+    if (p.free) rows.push(["✓ CTU & stock supplied free (worth " + gbp(p.ctuCost) + ex + "), so margin on kits is", "100%", "tick"]);
+    else rows.push(["You paid for the CTU, so margin on kits is", pct(kitMargin)]);
     if (p.vat) rows.push(["Takings ex VAT: " + gbp(sales) + " ÷ 1.2", gbp(r.net)]);
     rows.push(["Cost of " + p.name + ex, gbp(p.cost)]);
-    rows.push(["<span class='op'>minus</span> BA takings put towards it", "−" + gbp(Math.min(r.net, p.cost))]);
-    rows.push(["<b>Store pays for the bundle" + ex + "</b>", gbp(r.pays)]);
+    rows.push(["<span class='op'>minus</span> today's takings put towards it", "−" + gbp(Math.min(r.net, p.cost))]);
+    rows.push(["<b>You pay for the bundle" + ex + "</b>", gbp(r.pays)]);
     if (p.vat) rows.push(["Bundle sells for " + gbp(p.rrp) + " inc VAT ÷ 1.2", gbp(r.rrpNet)]);
     else rows.push(["Bundle sells for (RRP)", gbp(p.rrp)]);
     rows.push(["Profit on bundle: " + gbp(r.rrpNet) + " − " + gbp(r.pays), gbp(r.bundleProfit)]);
     rows.push(["POR: " + gbp(r.bundleProfit) + " ÷ " + gbp(r.rrpNet), pct(r.por)]);
     if (r.extra > 0) rows.push(["Extra cash left over: " + gbp(r.net) + " − " + gbp(p.cost), "+" + gbp(r.extra), "plus"]);
-    rows.push(["<b>Total in the store's pocket" + ex + "</b>", gbp(r.total), "total"]);
+    if (!p.free && r.stockCost > 0) rows.push(["<span class='op'>minus</span> cost of kits sold (" + gbp(p.kitCost) + " each)", "−" + gbp(r.stockCost), "minus"]);
+    rows.push(["<b>Total in your pocket" + ex + "</b>", gbp(r.total), "total"]);
     $("maths").innerHTML = rows.map(function (rw) {
       return "<tr class='" + (rw[2] || "") + "'><td>" + rw[0] + "</td><td>" + rw[1] + "</td></tr>";
     }).join("");
@@ -442,7 +493,7 @@ textarea#summary { width: 100%; min-height: 150px; font: 14px/1.5 ui-monospace, 
     $("ladder").innerHTML = steps.map(function (k) {
       var x = calc(round2(k * p.kit), p);
       var cur = kitsLine && k === state.kits ? " class='cur'" : "";
-      return "<tr data-k='" + k + "'" + cur + "><td>" + k + (k === kitsToFree ? " ★" : "") + "</td><td>" + gbp(x.sales) + "</td><td>" + gbp(x.pays) + "</td><td>" + pct(x.por) + "</td><td>" + (x.extra > 0 ? "+" + gbp(x.extra) : "–") + "</td></tr>";
+      return "<tr data-k='" + k + "'" + cur + "><td>" + k + (k === kitsToFree ? " ★" : "") + "</td><td>" + gbp(x.sales) + "</td><td>" + gbp(x.pays) + "</td><td>" + pct(x.por) + "</td><td>" + (x.extra > 0 ? "+" + gbp(x.extra) : "–") + "</td><td>" + gbp(x.total) + "</td></tr>";
     }).join("");
 
     // summary
@@ -450,12 +501,12 @@ textarea#summary { width: 100%; min-height: 150px; font: 14px/1.5 ui-monospace, 
     var d = new Date().toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
     var lines = [
       "Ignite BA Day" + (store ? " – " + store : "") + " – " + d,
-      (kitsLine ? "Starter kits sold: " + state.kits + " × " + gbp(p.kit) + " = " + gbp(sales) : "Stock sold: " + gbp(sales)) + " (100% margin, kits supplied free)",
+      (kitsLine ? "Starter kits sold: " + state.kits + " × " + gbp(p.kit) + " = " + gbp(sales) : "Stock sold: " + gbp(sales)) + (p.free ? " (✓ CTU & stock supplied FREE, worth " + gbp(p.ctuCost) + ex + ", so 100% margin)" : " (CTU paid for, kits cost " + gbp(p.kitCost) + ex + " each)"),
       "",
       p.name + ": costs " + gbp(p.cost) + ex + ", sells for " + gbp(p.rrp) + (p.vat ? " inc VAT" : ""),
-      "Normally: pay " + gbp(p.cost) + " → POR " + pct(base.por) + " (" + gbp(base.bundleProfit) + " profit)",
-      "Today: pay " + gbp(r.pays) + " → POR " + pct(r.por) + (r.extra > 0 ? " plus " + gbp(r.extra) + " extra in the till" : ""),
-      "",
+      "Bought on its own: pay " + gbp(p.cost) + " → POR " + pct(base.por) + " (" + gbp(base.bundleProfit) + " profit)",
+      "With today's sales: pay " + gbp(r.pays) + " → POR " + pct(r.por) + (r.extra > 0 ? " plus " + gbp(r.extra) + " extra in the till" : ""),
+      (!p.free && r.stockCost > 0 ? "Less cost of kits sold: " + gbp(r.stockCost) : ""),
       "Total in your pocket: " + gbp(r.total) + ex + (lift > 0 ? " (" + gbp(lift) + " more than buying the bundle normally)" : "")
     ];
     $("summary").value = lines.join("\n");
@@ -489,6 +540,9 @@ textarea#summary { width: 100%; min-height: 150px; font: 14px/1.5 ui-monospace, 
   document.querySelectorAll("[data-cash]").forEach(function (b) { b.addEventListener("click", function () { state.cash = +b.dataset.cash; render(); }); });
   ["kitPrice", "bCost", "bRrp", "bName", "store"].forEach(function (id) { $(id).addEventListener("input", render); });
   $("vat").addEventListener("change", render);
+  ["ctuCost", "ctuKits"].forEach(function (id) { $(id).addEventListener("input", render); });
+  $("freeYes").addEventListener("click", function () { state.free = true; render(); });
+  $("freeNo").addEventListener("click", function () { state.free = false; render(); });
   document.querySelectorAll("[data-preset]").forEach(function (b) {
     b.addEventListener("click", function () {
       var q = PRESETS[b.dataset.preset];
