@@ -28,15 +28,20 @@ Everything else follows from those answers and the three Vape Local bundles:
 
 ### Page 2: 12-month forecast
 
-Some of today's kit buyers become regulars and come back for pods and refills. Defaults: 30% come back, £6.99 a visit (inc VAT, average of pods and refills), every week, 55% margin on reorders, 12 months. All of these can be edited.
+Some of today's kit buyers become regulars and come back for pods and refills. If the retailer gets behind Ignite (on display, kept in stock, recommended by staff), new customers also buy a starter kit every week, and the same share of them become regulars. The regular base snowballs.
 
-- Regulars = kits sold × 30% (rounded)
-- Their spend a month = regulars × spend per visit × 52 ÷ 12
-- Their first purchases sell through the replacement bundle. That profit is already counted on page 1, so the forecast doesn't count it twice.
-- After the bundle sells through, every sale makes the reorder margin: reorder profit = (regulars' spend ex VAT so far − bundle RRP ex VAT) × 55%
-- Total profit = page 1's total profit + reorder profit
+Defaults, all editable: retailer engaged, 2 new customers a week, 30% come back, £6.99 a visit (inc VAT, average of pods and refills), every week, 55% margin on reorders, 12 months.
 
-Example: 10 kits → 3 regulars → £90.87 a month → the Medium Bundle sells through in 10 weeks → £407.11 reorder profit over 12 months, £591.49 in total.
+- Regulars from today = kits sold × 30% (rounded)
+- Each month (52 ÷ 12 weeks): new customers buy a kit at £10.99, and 30% of them join the regulars (joining steadily through the month)
+- Sales a month = regulars × spend per visit × visits a month + new customers' kits
+- The first sales sell through the replacement bundle. That profit is already counted on page 1, so the forecast doesn't count it twice.
+- After the bundle sells through, every sale makes the reorder margin: reorder profit = (sales ex VAT so far − bundle RRP ex VAT) × 55%
+- Total profit = page 1's total profit + reorder profit. The chart splits this into today's deal, reorders from today's regulars, and the extra from new customers.
+
+Example: 10 kits, Medium Bundle, free stock.
+- Not engaged: 3 regulars, the bundle sells through in 10 weeks, £591.49 total profit over 12 months.
+- Engaged, 2 new customers a week: about 34 regulars by month 12, the bundle sells through in 4 weeks, £3,714.23 total profit (£3,122.74 more).
 
 ### The maths (all ex VAT, as on Vape Local)
 

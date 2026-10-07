@@ -43,18 +43,19 @@ button { touch-action: manipulation; }
   --r: 14px;
   --c-today: #b58500;
   --c-reg: #1f63e8;
+  --c-new: #0f9d8a;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --navy: #16204a; --navy-ink: #ffffff; --yellow: #ffd200; --yellow-ink: #16204a; --blue: #5b8dff;
     --bg: #0d1226; --surface: #161d38; --fg: #eef0fa; --muted: #9aa2c4; --line: #2a3359;
-    --good: #4fd48a; --good-bg: #133626; --warn: #f2b84b; --c-today: #b88a00; --c-reg: #4f7ff0; color-scheme: dark;
+    --good: #4fd48a; --good-bg: #133626; --warn: #f2b84b; --c-today: #b88a00; --c-reg: #4f7ff0; --c-new: #13a08c; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --navy: #16204a; --navy-ink: #ffffff; --yellow: #ffd200; --yellow-ink: #16204a; --blue: #5b8dff;
   --bg: #0d1226; --surface: #161d38; --fg: #eef0fa; --muted: #9aa2c4; --line: #2a3359;
-  --good: #4fd48a; --good-bg: #133626; --warn: #f2b84b; --c-today: #b88a00; --c-reg: #4f7ff0; color-scheme: dark;
+  --good: #4fd48a; --good-bg: #133626; --warn: #f2b84b; --c-today: #b88a00; --c-reg: #4f7ff0; --c-new: #13a08c; color-scheme: dark;
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
@@ -160,6 +161,7 @@ details.settings summary { cursor: pointer; padding: 12px 0; font-weight: 600; }
 .hero-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 14px; }
 .stepper input::-webkit-outer-spin-button, .stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 .stepper input { -moz-appearance: textfield; }
+.hero-row.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .stat { display: grid; gap: 2px; align-content: start; }
 .stat .k { font-size: 13px; opacity: .8; }
 .stat .v { font: 800 clamp(30px, 4.2vw, 42px) / 1 var(--display); }
@@ -414,6 +416,21 @@ textarea#summary { width: 100%; min-height: 190px; font: 14px/1.5 ui-monospace, 
         <h2 id="fIn">Your new regulars</h2>
       </div>
       <p class="hint" id="fFrom"></p>
+
+      <div class="q">
+        <div class="label"><span class="n">3</span>Will you get behind Ignite?</div>
+        <div class="yn" role="group" aria-label="Is the retailer engaged">
+          <button type="button" class="yes" id="engYes" aria-pressed="true">✓ Yes, engaged</button>
+          <button type="button" class="no" id="engNo" aria-pressed="false">Not yet</button>
+        </div>
+        <p class="hint">Engaged means Ignite is on display, kept in stock and recommended by staff. That brings new customers in every week.</p>
+        <div class="fields num" id="newBox" style="padding:0">
+          <label class="full">New Ignite customers a week
+            <input id="fNew" type="number" inputmode="numeric" min="0" step="1" value="2">
+          </label>
+        </div>
+      </div>
+
       <div class="fields num" style="padding:0">
         <label>Customers who come back (%)
           <input id="fRate" type="number" inputmode="numeric" min="0" max="100" step="1" value="30">
@@ -435,11 +452,12 @@ textarea#summary { width: 100%; min-height: 190px; font: 14px/1.5 ui-monospace, 
           <input id="fMonths" type="number" inputmode="numeric" min="1" max="24" step="1" value="12">
         </label>
       </div>
-      <p class="hint">Spend per visit is an average across Ignite pods and refills. Margin is 55% to match Vape Local bundle pricing. Change either to suit the store.</p>
+      <p class="hint">Spend per visit is an average across Ignite pods and refills. New customers each buy a starter kit at the kit price on page 1. Margin is 55% to match Vape Local bundle pricing.</p>
       <div style="display:grid;gap:8px">
         <div class="eyebrow">How it works</div>
         <ol class="hint" style="margin:0;padding-left:18px;display:grid;gap:4px;font-size:14px">
-          <li>Some of today's kit buyers come back for pods and refills.</li>
+          <li>Some of today's kit buyers come back every week for pods and refills.</li>
+          <li>If you're engaged, new customers buy a starter kit every week, and the same share of them come back too. Your regulars snowball.</li>
           <li>Their first purchases sell through the bundle today paid for. That profit is already on page 1.</li>
           <li>After that you reorder, and every sale makes your margin on top.</li>
         </ol>
@@ -453,24 +471,29 @@ textarea#summary { width: 100%; min-height: 190px; font: 14px/1.5 ui-monospace, 
       </div>
       <p class="pick" id="fPick"></p>
       <div class="flow num">
-        <div><span>Kits sold today</span><b id="fKits"></b></div>
-        <div><span>New regulars</span><b id="fRegs"></b><span id="fRegsS"></span></div>
-        <div><span>Their spend a month</span><b id="fMonthly"></b><span id="fMonthlyS"></span></div>
+        <div><span>Regulars from today</span><b id="fRegs"></b><span id="fRegsS"></span></div>
+        <div><span>New customers a week</span><b id="fNewV"></b><span id="fNewS"></span></div>
+        <div><span id="fEndK"></span><b id="fEndRegs"></b><span id="fEndS"></span></div>
         <div><span>Bundle sold through in</span><b id="fSellThrough"></b><span id="fSellS"></span></div>
       </div>
 
       <div class="hero">
         <div class="eyebrow" id="fHeroTitle"></div>
-        <div class="hero-row num">
+        <div class="hero-row num two">
           <div class="stat"><span class="k">Today's deal (page 1)</span><span class="v" id="fToday"></span><span class="s" id="fTodayS"></span></div>
-          <div class="stat"><span class="k">Profit on reorders</span><span class="v" id="fReorder"></span><span class="s" id="fReorderS"></span></div>
+          <div class="stat"><span class="k">Reorders: today's regulars</span><span class="v" id="fReorder"></span><span class="s" id="fReorderS"></span></div>
+          <div class="stat" id="fGrowthStat"><span class="k">Extra from getting behind it</span><span class="v" id="fGrowth"></span><span class="s" id="fGrowthS"></span></div>
           <div class="stat"><span class="k">Total profit</span><span class="v y" id="fTotal"></span><span class="s" id="fTotalS"></span></div>
         </div>
       </div>
 
       <div style="display:grid;gap:8px">
         <div class="eyebrow">Profit building up, month by month (ex VAT)</div>
-        <div class="legend"><span><i style="background:var(--c-today)"></i>Today's deal</span><span><i style="background:var(--c-reg)"></i>Profit on reorders from regulars</span></div>
+        <div class="legend">
+          <span><i style="background:var(--c-today)"></i>Today's deal</span>
+          <span><i style="background:var(--c-reg)"></i>Reorders from today's regulars</span>
+          <span id="legNew"><i style="background:var(--c-new)"></i>Extra from new customers (engaged)</span>
+        </div>
         <div class="chart-wrap"><svg class="chart num" id="fChart" role="img" aria-label="Cumulative profit by month"></svg><div class="tip" id="fTip" hidden></div></div>
       </div>
 
@@ -478,7 +501,7 @@ textarea#summary { width: 100%; min-height: 190px; font: 14px/1.5 ui-monospace, 
         <div class="eyebrow" style="margin-bottom:4px">Month by month</div>
         <div class="ladder-wrap">
           <table class="ftable num">
-            <thead><tr><th>Month</th><th>Regulars' sales (inc VAT)</th><th>Bundle stock left</th><th>Reorder profit</th><th>Total profit so far</th></tr></thead>
+            <thead><tr><th>Month</th><th>Regulars</th><th>Ignite sales that month (inc VAT)</th><th>Bundle stock left</th><th>Total profit so far</th></tr></thead>
             <tbody id="fRows"></tbody>
           </table>
         </div>
@@ -497,8 +520,8 @@ textarea#summary { width: 100%; min-height: 190px; font: 14px/1.5 ui-monospace, 
   var PRICE_IDS = Object.keys(DEFAULT_PRICES);
   var $ = function (id) { return document.getElementById(id); };
   // sel: the bundle the retailer is looking at; null means follow the best free bundle.
-  var state = { mode: "kits", kits: 10, cash: 50, free: true, bought: "starter", sel: null, tab: "today" };
-  var FORECAST_IDS = ["fRate", "fSpend", "fFreq", "fMargin", "fMonths"];
+  var state = { mode: "kits", kits: 10, cash: 50, free: true, bought: "starter", sel: null, tab: "today", engaged: true };
+  var FORECAST_IDS = ["fNew", "fRate", "fSpend", "fFreq", "fMargin", "fMonths"];
 
   function num(v) { var n = parseFloat(v); return isFinite(n) && n > 0 ? n : 0; }
   function r2(n) { return Math.round(n * 100) / 100; }
@@ -510,14 +533,14 @@ textarea#summary { width: 100%; min-height: 190px; font: 14px/1.5 ui-monospace, 
       var s = JSON.parse(localStorage.getItem("ignite-ba-calc-v2") || "null");
       if (!s) return;
       PRICE_IDS.concat(["store"], FORECAST_IDS).forEach(function (k) { if (s[k] != null) $(k).value = s[k]; });
-      ["mode", "kits", "cash", "free", "bought", "sel"].forEach(function (k) { if (s[k] !== undefined) state[k] = s[k]; });
+      ["mode", "kits", "cash", "free", "bought", "sel", "engaged"].forEach(function (k) { if (s[k] !== undefined) state[k] = s[k]; });
       if (KEYS.indexOf(state.bought) < 0) state.bought = "starter";
       if (state.sel !== null && KEYS.indexOf(state.sel) < 0) state.sel = null;
     } catch (e) {}
   }
   function save() {
     try {
-      var s = { mode: state.mode, kits: state.kits, cash: state.cash, free: state.free, bought: state.bought, sel: state.sel, store: $("store").value };
+      var s = { mode: state.mode, kits: state.kits, cash: state.cash, free: state.free, bought: state.bought, sel: state.sel, engaged: state.engaged, store: $("store").value };
       PRICE_IDS.concat(FORECAST_IDS).forEach(function (k) { s[k] = $(k).value; });
       localStorage.setItem("ignite-ba-calc-v2", JSON.stringify(s));
     } catch (e) {}
@@ -697,7 +720,7 @@ textarea#summary { width: 100%; min-height: 190px; font: 14px/1.5 ui-monospace, 
       return "<tr data-k='" + n + "'" + (kitsMode && n === state.kits ? " class='cur'" : "") + "><td>" + n + "</td><td>" + gbp(n * p.kit) + "</td>" + cells + "</tr>";
     }).join("");
 
-    var F = forecast({ kitsSold: kitsSold, b: b, d: d });
+    var F = forecast({ kitsSold: kitsSold, b: b, d: d, kitPrice: p.kit });
 
     // Summary
     var store = $("store").value.trim();
@@ -719,8 +742,9 @@ textarea#summary { width: 100%; min-height: 190px; font: 14px/1.5 ui-monospace, 
       "  On its own it would be " + gbp(d.baseProfit) + " | POR " + pct(d.basePor) + (lift > 0 ? " (today adds " + gbp(lift) + ")" : ""),
       "",
       "",
-      "Forecast (" + F.months + " months): " + F.regs + " regular" + (F.regs === 1 ? "" : "s") + " (" + pct(F.rate) + " of " + kitsSold + " kits) spending " + gbp(F.spend) + " " + F.freqText + " = " + gbp(F.monthlyInc) + " a month",
-      "  Sells through your " + b.short + " Bundle in " + F.sellText + ", then " + gbp(F.reorder) + " profit on reorders",
+      "Forecast (" + F.months + " months): " + F.regs + " regular" + (F.regs === 1 ? "" : "s") + " from today (" + pct(F.rate) + " of " + kitsSold + " kits), spending " + gbp(F.spend) + " " + F.freqText,
+      (F.newPerWeek > 0 ? "  Engaged: " + F.newPerWeek + " new customers a week → about " + F.endRegs + " regulars by month " + F.months + "\n" : "") +
+      "  Sells through your " + b.short + " Bundle in " + F.sellText + ", then reorders: " + gbp(F.baseReorder) + " profit from today's regulars" + (F.extra > 0 ? " + " + gbp(F.extra) + " from new customers" : ""),
       "  Total profit over " + F.months + " months: " + gbp(F.total),
       "",
       "All figures ex VAT unless shown."
@@ -733,79 +757,120 @@ textarea#summary { width: 100%; min-height: 190px; font: 14px/1.5 ui-monospace, 
   }
 
 
-  // Page 2: regulars forecast. Regulars' first purchases sell through the bundle (already counted on page 1);
-  // after that the store reorders and makes its margin on every sale.
+  // Page 2: regulars forecast, simulated week by week.
+  // Regulars: today's kit buyers × return rate. If the retailer is engaged, new customers buy a starter kit
+  // each week and the same share of them become regulars too, so the regular base snowballs.
+  // The first sales sell through the bundle (its profit is already on page 1); after that every sale makes the reorder margin.
+  function simulate(o) {
+    // Even months of 52/12 weeks. New regulars join steadily through the month, so on average half a month's worth are buying.
+    var wk = 52 / 12, regs = o.r0, cumEx = 0, rows = [];
+    for (var m = 1; m <= o.months; m++) {
+      var joining = o.newPerWeek * o.rate * wk;
+      var salesInc = (regs + joining / 2) * o.spend * o.perYear / 12 + o.newPerWeek * wk * o.kitPrice;
+      cumEx += salesInc / VAT;
+      regs += joining;
+      rows.push({ m: m, regs: regs, salesInc: r2(salesInc), stockLeft: r2(Math.max(0, o.B - cumEx)), reorder: r2(Math.max(0, cumEx - o.B) * o.margin) });
+    }
+    return rows;
+  }
+
   function forecast(c) {
     var rate = Math.min(100, num($("fRate").value)) / 100;
     var spend = num($("fSpend").value);
     var perYear = +$("fFreq").value || 52;
     var margin = Math.min(100, num($("fMargin").value)) / 100;
     var months = Math.max(1, Math.min(24, Math.round(num($("fMonths").value)) || 12));
-    var regs = Math.round(c.kitsSold * rate);
-    var monthlyInc = r2(regs * spend * perYear / 12);
-    var monthlyEx = monthlyInc / VAT;
-    var B = c.b.rrpEx;
-    var sellMonths = monthlyEx > 0 ? B / monthlyEx : Infinity;
+    var newPerWeek = state.engaged ? num($("fNew").value) : 0;
+    var r0 = Math.round(c.kitsSold * rate);
+    var o = { r0: r0, rate: rate, spend: spend, perYear: perYear, margin: margin, months: months, kitPrice: c.kitPrice, B: c.b.rrpEx };
+    var base = simulate(Object.assign({}, o, { newPerWeek: 0 }));      // today's regulars only
+    var grow = simulate(Object.assign({}, o, { newPerWeek: newPerWeek })); // plus new customers if engaged
+    var rows = grow.map(function (g, k) {
+      return { m: g.m, regs: g.regs, salesInc: g.salesInc, stockLeft: g.stockLeft, baseReorder: base[k].reorder, extra: r2(g.reorder - base[k].reorder), total: r2(c.d.total + g.reorder) };
+    });
+    var last = rows[rows.length - 1], lastBase = base[base.length - 1];
     var freqText = perYear === 52 ? "a week" : perYear === 26 ? "a fortnight" : "a month";
-    var rows = [], m;
-    for (m = 1; m <= months; m++) {
-      var cum = monthlyEx * m;
-      var reorderProfit = r2(Math.max(0, cum - B) * margin);
-      rows.push({ m: m, salesInc: r2(monthlyInc), stockLeft: r2(Math.max(0, B - cum)), reorder: reorderProfit, total: r2(c.d.total + reorderProfit) });
+    // Weeks until the bundle stock has sold through, from the same model (looking up to 10 years ahead)
+    var sellWeek = null, long = simulate(Object.assign({}, o, { newPerWeek: newPerWeek, months: 120 })), prevLeft = c.b.rrpEx;
+    for (var k = 0; k < long.length; k++) {
+      if (long[k].stockLeft <= 0) {
+        var monthEx = long[k].salesInc / VAT, frac = monthEx > 0 ? prevLeft / monthEx : 1;
+        sellWeek = Math.max(1, Math.ceil((k + frac) * 52 / 12 - 1e-9));
+        break;
+      }
+      prevLeft = long[k].stockLeft;
     }
-    var last = rows[rows.length - 1];
-    var weeks = sellMonths * 52 / 12;
-    var sellText = !isFinite(sellMonths) ? "no time (no regulars)" : weeks < 13 ? Math.max(1, Math.ceil(weeks)) + " weeks" : (Math.round(sellMonths * 10) / 10) + " months";
-    if (!isFinite(sellMonths)) sellText = "–";
-    var F = { rate: rate, spend: spend, regs: regs, months: months, monthlyInc: monthlyInc, reorder: last.reorder, total: last.total, sellText: sellText, freqText: freqText };
+    var sellText = sellWeek === null ? "–" : sellWeek <= 12 ? sellWeek + " week" + (sellWeek === 1 ? "" : "s") : (Math.round(sellWeek / (52 / 12) * 10) / 10) + " months";
+    var endRegs = Math.round(last.regs);
 
+    $("engYes").setAttribute("aria-pressed", state.engaged);
+    $("engNo").setAttribute("aria-pressed", !state.engaged);
+    $("newBox").hidden = !state.engaged;
     $("fFrom").innerHTML = "From page 1: <b>" + c.kitsSold + " kits sold</b>, replacement <b>" + c.b.name + "</b>, " + (state.free ? "stock supplied free" : "stock bought in the " + NAMES[state.bought] + " Bundle") + ".";
-    $("fKits").textContent = c.kitsSold;
-    $("fRegs").textContent = regs;
-    $("fRegsS").textContent = pct(rate) + " come back";
-    $("fMonthly").textContent = gbp(monthlyInc);
-    $("fMonthlyS").textContent = gbp(spend) + " " + freqText + " each, inc VAT";
-    $("fSellThrough").textContent = isFinite(sellMonths) ? sellText : "–";
+    $("fRegs").textContent = r0;
+    $("fRegsS").textContent = pct(rate) + " of " + c.kitsSold + " kits";
+    $("fNewV").textContent = newPerWeek;
+    $("fNewS").textContent = state.engaged ? "each buys a " + gbp(c.kitPrice) + " kit" : "only if you get behind it";
+    $("fEndK").textContent = "Regulars by month " + months;
+    $("fEndRegs").textContent = endRegs;
+    $("fEndS").textContent = gbp(last.salesInc) + " of Ignite sales that month";
+    $("fSellThrough").textContent = sellText;
     $("fSellS").textContent = "your " + c.b.short + " Bundle (" + gbp(c.b.rrp) + " RRP)";
-    if (regs === 0) $("fPick").textContent = c.kitsSold > 0 ? "Sell a few more kits today and some of those customers come back every " + freqText.replace("a ", "") + "." : "Every kit sold today brings customers back for pods and refills.";
-    else $("fPick").textContent = c.kitsSold + " kits today brings in about " + regs + " regular" + (regs === 1 ? "" : "s") + ". They sell through your " + c.b.short + " Bundle in " + sellText + ", then make you " + gbp(r2(monthlyEx * margin)) + " a month on reorders.";
+
+    var pick;
+    if (r0 === 0 && newPerWeek === 0) pick = "Sell more kits today, or get behind Ignite, and customers start coming back every week.";
+    else if (state.engaged && newPerWeek > 0) pick = "Get behind Ignite and your regulars grow from " + r0 + " to about " + endRegs + " in " + months + " months. That's " + gbp(last.extra) + " more profit than the BA day alone.";
+    else pick = c.kitsSold + " kits today brings in about " + r0 + " regular" + (r0 === 1 ? "" : "s") + ". They sell through your " + c.b.short + " Bundle in " + sellText + ", then make you " + gbp(r2(r0 * spend * perYear / 12 / VAT * margin)) + " a month on reorders.";
+    $("fPick").textContent = pick;
+
     $("fHeroTitle").textContent = "Over " + months + " months · " + c.b.name;
     $("fToday").textContent = gbp(c.d.total);
     $("fTodayS").textContent = "kits sold + " + c.b.short + " Bundle";
-    $("fReorder").textContent = gbp(last.reorder);
-    $("fReorderS").textContent = pct(margin) + " of regulars' spend after the bundle sells";
+    $("fReorder").textContent = gbp(last.baseReorder);
+    $("fReorderS").textContent = r0 + " regular" + (r0 === 1 ? "" : "s") + ", " + pct(margin) + " margin after the bundle sells";
+    $("fGrowthStat").hidden = !state.engaged;
+    $("fGrowth").textContent = gbp(last.extra);
+    $("fGrowthS").textContent = newPerWeek + " new customers a week, " + pct(rate) + " become regulars";
     $("fTotal").textContent = gbp(last.total);
     $("fTotalS").textContent = "vs " + gbp(c.d.baseProfit) + " buying the bundle on its own";
+    $("legNew").hidden = !state.engaged;
 
+    var soldMarked = false;
     $("fRows").innerHTML = rows.map(function (r) {
-      return "<tr" + (r.stockLeft === 0 && r.reorder > 0 && (r.m === 1 || rows[r.m - 2].stockLeft > 0) ? " class='sold'" : "") + "><td>" + r.m + "</td><td>" + gbp(r.salesInc) + "</td><td>" + (r.stockLeft > 0 ? gbp(r.stockLeft) : "Sold through") + "</td><td>" + gbp(r.reorder) + "</td><td>" + gbp(r.total) + "</td></tr>";
+      var mark = !soldMarked && r.stockLeft === 0;
+      if (mark) soldMarked = true;
+      return "<tr" + (mark ? " class='sold'" : "") + "><td>" + r.m + "</td><td>" + Math.round(r.regs) + "</td><td>" + gbp(r.salesInc) + "</td><td>" + (r.stockLeft > 0 ? gbp(r.stockLeft) : "Sold through") + "</td><td>" + gbp(r.total) + "</td></tr>";
     }).join("");
     drawChart(rows, c.d.total);
-    return F;
+    return { rate: rate, spend: spend, regs: r0, endRegs: endRegs, months: months, newPerWeek: newPerWeek, freqText: freqText, sellText: sellText,
+             baseReorder: last.baseReorder, extra: last.extra, total: last.total, endSales: last.salesInc };
   }
 
-  // Stacked bars: today's deal (constant) under cumulative reorder profit. One axis, recessive grid.
+  // Stacked bars: today's deal, then reorders from today's regulars, then extra from new customers. One axis, recessive grid.
   function drawChart(rows, todayProfit) {
-    var svg = $("fChart"), W = 640, H = 260, L = 52, R = 8, T = 12, Bm = 28;
+    var svg = $("fChart"), W = 640, H = 260, L = 56, R = 8, T = 14, Bm = 28;
     var max = Math.max(1, rows[rows.length - 1].total);
     var step = niceStep(max / 4), top = Math.ceil(max / step) * step;
     var n = rows.length, bw = (W - L - R) / n, barW = Math.max(6, Math.min(36, bw * 0.62));
     function y(v) { return T + (H - T - Bm) * (1 - v / top); }
     var g = "<g class='grid'>";
-    for (var v = 0; v <= top + 1e-9; v += step) g += "<line x1='" + L + "' x2='" + (W - R) + "' y1='" + y(v) + "' y2='" + y(v) + "'/><text x='" + (L - 6) + "' y='" + (y(v) + 4) + "' text-anchor='end'>£" + Math.round(v) + "</text>";
+    for (var v = 0; v <= top + 1e-9; v += step) g += "<line x1='" + L + "' x2='" + (W - R) + "' y1='" + y(v) + "' y2='" + y(v) + "'/><text x='" + (L - 6) + "' y='" + (y(v) + 4) + "' text-anchor='end'>£" + Math.round(v).toLocaleString("en-GB") + "</text>";
     g += "</g>";
     var bars = "", hits = "";
     rows.forEach(function (r, i) {
       var cx = L + bw * i + bw / 2, x = cx - barW / 2;
-      var y0 = y(0), yT = y(todayProfit), yR = y(r.total);
-      // today's deal segment, rounded only where it is the top of the bar
-      bars += seg(x, yT, barW, y0 - yT, "var(--c-today)", r.reorder <= 0);
-      if (r.reorder > 0) bars += seg(x, yR, barW, Math.max(0, yT - yR - 2), "var(--c-reg)", true);
+      var parts = [[todayProfit, "var(--c-today)"], [r.baseReorder, "var(--c-reg)"], [r.extra, "var(--c-new)"]].filter(function (p) { return p[0] > 0; });
+      var acc = 0;
+      parts.forEach(function (p, k) {
+        var yTop = y(acc + p[0]), yBot = y(acc), gap = k > 0 ? 2 : 0;
+        bars += seg(x, yTop, barW, Math.max(0, yBot - yTop - gap), p[1], k === parts.length - 1);
+        acc += p[0];
+      });
       if (n <= 12 || i % 2 === 1 || i === n - 1) bars += "<text x='" + cx + "' y='" + (H - 8) + "' text-anchor='middle'>" + r.m + "</text>";
       hits += "<rect class='hit' data-i='" + i + "' x='" + (L + bw * i) + "' y='" + T + "' width='" + bw + "' height='" + (H - T - Bm) + "'/>";
     });
     var lastR = rows[rows.length - 1];
-    var label = "<text x='" + (L + bw * (n - 0.5)) + "' y='" + (y(lastR.total) - 6) + "' text-anchor='end' style='fill:var(--fg);font-weight:700'>" + gbp(lastR.total) + "</text>";
+    var label = "<text x='" + (L + bw * (n - 0.5)) + "' y='" + Math.max(10, y(lastR.total) - 6) + "' text-anchor='end' style='fill:var(--fg);font-weight:700'>" + gbp(lastR.total) + "</text>";
     svg.setAttribute("viewBox", "0 0 " + W + " " + H);
     svg.innerHTML = g + bars + label + "<text x='" + L + "' y='" + (H - 8) + "' text-anchor='end' dx='-6'>Month</text>" + hits;
     var tip = $("fTip");
@@ -815,7 +880,8 @@ textarea#summary { width: 100%; min-height: 190px; font: 14px/1.5 ui-monospace, 
       if (!h) { tip.hidden = true; return; }
       h.classList.add("on");
       var r = rows[+h.dataset.i], box = svg.getBoundingClientRect(), sc = box.width / W;
-      tip.innerHTML = "<b>Month " + r.m + ": " + gbp(r.total) + "</b>Today's deal " + gbp(todayProfit) + "<br>Reorder profit " + gbp(r.reorder) + (r.stockLeft > 0 ? "<br>Bundle stock left " + gbp(r.stockLeft) : "");
+      tip.innerHTML = "<b>Month " + r.m + ": " + gbp(r.total) + "</b>Today's deal " + gbp(todayProfit) + "<br>Reorders, today's regulars " + gbp(r.baseReorder) +
+        (r.extra > 0 ? "<br>Extra from new customers " + gbp(r.extra) : "") + "<br>" + Math.round(r.regs) + " regulars" + (r.stockLeft > 0 ? " · bundle stock left " + gbp(r.stockLeft) : "");
       tip.hidden = false;
       var half = tip.offsetWidth / 2, cxp = (L + bw * (+h.dataset.i) + bw / 2) * sc;
       tip.style.left = Math.max(half, Math.min(box.width - half, cxp)) + "px";
@@ -874,6 +940,8 @@ textarea#summary { width: 100%; min-height: 190px; font: 14px/1.5 ui-monospace, 
     if (t) { state.sel = t.dataset.tier; render(); }
   });
   FORECAST_IDS.forEach(function (id) { $(id).addEventListener("input", render); $(id).addEventListener("change", render); });
+  $("engYes").addEventListener("click", function () { state.engaged = true; render(); });
+  $("engNo").addEventListener("click", function () { state.engaged = false; render(); });
   $("tabToday").addEventListener("click", function () { setTab("today"); window.scrollTo(0, 0); });
   $("tabForecast").addEventListener("click", function () { setTab("forecast"); window.scrollTo(0, 0); });
   $("autoBtn").addEventListener("click", function () { state.sel = null; render(); });
