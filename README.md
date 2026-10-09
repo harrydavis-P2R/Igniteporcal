@@ -43,7 +43,11 @@ Example: 10 kits, Medium Bundle, free stock.
 - Not engaged: 3 regulars, the bundle sells through in 10 weeks, £591.49 total profit over 12 months.
 - Engaged, 2 new customers a week: about 34 regulars by month 12, the bundle sells through in 4 weeks, £3,714.23 total profit (£3,122.74 more).
 
-### The maths (all ex VAT, as on Vape Local)
+### Ex VAT / Inc VAT switch
+
+The switch at the top right shows every £ figure either ex VAT (the default, as on Vape Local) or inc VAT. The maths runs in the chosen basis. Ex VAT divides inc-VAT prices (RRP, kit price, till takings) by 1.2. Inc VAT multiplies ex-VAT prices (your bundle price, CTU value) by 1.2. Percentages (POR, margin) are the same in both, and every inc-VAT figure is the ex-VAT figure × 1.2. Example: £184.38 ex VAT = £221.26 inc VAT.
+
+### The maths (ex VAT shown, as on Vape Local)
 
 - Takings ex VAT = kits × £10.99 ÷ 1.2
 - You pay now = bundle price − takings (never below £0)
